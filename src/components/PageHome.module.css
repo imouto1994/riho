@@ -1,0 +1,168 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: black;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  z-index: 1;
+}
+
+.headerSearchInput {
+  flex: 1;
+  width: 80%;
+  border: none;
+  border-radius: 6px;
+  background: rgb(32, 32, 32);
+  color: rgb(200, 200, 200);
+  padding: 8px 16px;
+}
+
+.headerSearchInput::placeholder {
+  color: rgb(100, 100, 100);
+}
+
+.headerFilter {
+  flex: 0 0 28px;
+  width: 28px;
+  fill: white;
+  margin-left: 24px;
+  font-size: 0;
+}
+
+.headerFilterIcon {
+  width: 100%;
+  fill: white;
+}
+
+.loadingContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 256px;
+}
+
+.loadingIcon {
+  width: 100%;
+}
+
+.seriesGrid {
+  display: flex;
+  flex-flow: row wrap;
+  padding: 64px 0 32px;
+}
+
+.series {
+  flex: 0 0 calc(100% / 3);
+  width: calc(100% / 3);
+  padding: 4px 12px;
+  margin-top: 8px;
+}
+
+.linkContainer {
+  display: block;
+}
+
+.thumbnailWrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.thumbnailWrapper::before {
+  display: block;
+  content: "";
+  padding-top: 150%;
+}
+
+.thumbnail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+.title {
+  margin-top: 4px;
+  font-weight: 700;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filterModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 2;
+}
+
+.filterModal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80%;
+  background: black;
+  z-index: 3;
+  padding: 24px 0;
+}
+
+.filterActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 24px 4px 0;
+  margin-bottom: 12px;
+}
+
+.filterSection {
+  padding: 4px 16px 20px;
+}
+
+.filterSectionTitle {
+  text-transform: uppercase;
+  color: #9fadbd;
+  font-weight: 600;
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+
+.filterOption {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+}
+
+.filterOption:not(:last-child) {
+  margin-bottom: 20px;
+}
+
+.filterOptionIcon {
+  flex: 0 0 20px;
+  width: 20px;
+  margin-right: 24px;
+  fill: #e84393;
+}
+
+.filterOptionIconHidden {
+  visibility: hidden;
+}
+
+.filterOptionTitle {
+  font-weight: 500;
+  font-size: 20px;
+}

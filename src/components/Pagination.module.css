@@ -1,0 +1,48 @@
+.pageEntries {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.pageEntryWrapper {
+  display: flex;
+  width: 64px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid white;
+  color: white;
+  font-size: 24px;
+  margin: 0 4px;
+}
+
+.pageEntryWrapperSelected {
+  border-color: #e84393;
+  background: #e84393;
+  font-weight: 700;
+}
+
+.pageEntryWrapperDisabled {
+  border-color: rgb(100, 100, 100);
+  color: rgb(100, 100, 100);
+  pointer-events: none;
+}
+
+.pageEntryWrapperEllipsis {
+  border: none;
+}
+
+.pageEntryIcon {
+  width: 20px;
+  fill: white;
+}
+
+.pageEntryIconDisabled {
+  fill: rgb(100, 100, 100);
+}
+
+.pageEntryIconInverse {
+  transform: rotateZ(180deg);
+}

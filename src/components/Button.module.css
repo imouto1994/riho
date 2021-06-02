@@ -1,0 +1,13 @@
+.button {
+  padding: 8px 32px;
+  background: #e84393;
+  color: white;
+  font-weight: 600;
+  font-size: 20px;
+  border-radius: 4px;
+}
+
+.buttonTransparent {
+  background: transparent;
+  color: #e84393;
+}

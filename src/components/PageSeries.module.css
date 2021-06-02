@@ -1,0 +1,155 @@
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 96px;
+  background: rgba(0, 0, 0, 0);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  padding-left: 32px;
+}
+
+.headerBackIcon {
+  height: 40px;
+  fill: white;
+}
+
+.heroBackgroundWrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: -1;
+}
+
+.heroBackgroundWrapper::before {
+  display: block;
+  content: "";
+  padding-top: 70%;
+}
+
+.heroBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.heroBackgroundOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: -webkit-linear-gradient(
+    top,
+    rgba(0, 0, 0, 0.8),
+    rgba(0, 0, 0, 1)
+  );
+}
+
+.infoContainer {
+  padding-top: 160px;
+  display: flex;
+  align-items: center;
+}
+
+.infoThumbnailWrapper {
+  position: relative;
+  width: 240px;
+  height: 360px;
+  margin-left: 32px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.infoThumbnail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.infoContent {
+  margin-left: 24px;
+}
+
+.infoTitle {
+  font-size: 36px;
+  font-weight: 800;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.infoAuthor {
+  color: #9fadbd;
+  font-weight: 600;
+}
+
+.infoCircle {
+  color: #9fadbd;
+  font-weight: 600;
+}
+
+.previewGrid {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  margin-top: 32px;
+}
+
+.preview {
+  flex: 0 0 calc(100% / 4);
+  width: calc(100% / 4);
+  padding: 0 12px;
+  margin-top: 16px;
+}
+
+.previewWrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.previewPadding {
+  width: 100%;
+}
+
+.previewImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.chapters {
+  margin-top: 48px;
+  padding: 0 32px;
+}
+
+.chapter {
+  display: block;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.chapterTitle {
+  font-weight: 600;
+}
+
+.chapterSubtitle {
+  font-size: 14px;
+  color: #9fadbd;
+}
