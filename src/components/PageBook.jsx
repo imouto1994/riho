@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { useQuery } from "react-query";
 import classnames from "classnames";
 
@@ -99,10 +99,8 @@ function Header(props) {
 
   return (
     <div className={headerClassName}>
-      <Link href={`/series/${seriesId}`}>
-        <a>
-          <IconBack className={styles.headerBackIcon} />
-        </a>
+      <Link to={`/series/${seriesId}`}>
+        <IconBack className={styles.headerBackIcon} />
       </Link>
       <div>
         <p className={styles.headerTitle}>{title}</p>

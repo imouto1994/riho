@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 import { useQuery } from "react-query";
 
 import { IconBack } from "./IconBack";
@@ -109,7 +109,7 @@ function ThumbnailsPreview(props) {
     <div className={styles.previewGrid}>
       {[...Array(Math.min(8, book.media.pagesCount))].map((_, index) => (
         <div className={styles.preview} key={index}>
-          <Link className={styles.previewWrapper} href={`/book/${book.id}`}>
+          <Link className={styles.previewWrapper} to={`/book/${book.id}`}>
             <div
               className={styles.previewPadding}
               style={{
@@ -138,7 +138,7 @@ function ChaptersList(props) {
         <Link
           className={styles.chapter}
           key={chapter.id}
-          href={`/book/${chapter.id}`}
+          to={`/book/${chapter.id}`}
         >
           <div className={styles.chapterTitle}>{chapter.name}</div>
           <div className={styles.chapterSubtitle}>
@@ -153,10 +153,8 @@ function ChaptersList(props) {
 function Header() {
   return (
     <div className={styles.header}>
-      <Link href="/">
-        <a>
-          <IconBack className={styles.headerBackIcon} />
-        </a>
+      <Link to="/">
+        <IconBack className={styles.headerBackIcon} />
       </Link>
     </div>
   );

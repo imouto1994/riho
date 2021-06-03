@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "react-query";
-import { Link, useLocation } from "wouter";
+import { Link, useHistory } from "react-router-dom";
 import classnames from "classnames";
 import queryString from "query-string";
 
@@ -20,7 +20,7 @@ import { getSeries, getSeriesThumbnailUrl } from "../services/series";
 import styles from "./PageHome.module.css";
 
 export function PageHome() {
-  const [_, setRouteLocation] = useLocation();
+  const history = useHistory();
   const params = queryString.parse(window.location.search, {
     arrayFormat: "index",
   });
@@ -108,7 +108,7 @@ export function PageHome() {
       { arrayFormat: "index" },
     );
     setShowFilterModal(false);
-    setRouteLocation(
+    history.push(
       `/${newLocationSearch.length > 0 ? `?${newLocationSearch}` : ""}`,
     );
   }
@@ -122,7 +122,7 @@ export function PageHome() {
     const newLocationSearch = queryString.stringify(params, {
       arrayFormat: "index",
     });
-    setRouteLocation(
+    history.push(
       `/${newLocationSearch.length > 0 ? `?${newLocationSearch}` : ""}`,
     );
   }
@@ -158,7 +158,7 @@ function SeriesGrid(props) {
     <ul className={styles.seriesGrid}>
       {result.content.map((series) => (
         <li className={styles.series} key={series.id}>
-          <Link className={styles.linkContainer} href={`/series/${series.id}`}>
+          <Link className={styles.linkContainer} to={`/series/${series.id}`}>
             <div className={styles.thumbnailWrapper}>
               <Image
                 className={styles.thumbnail}

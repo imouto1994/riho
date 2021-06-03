@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import classnames from "classnames";
-import { Link } from "wouter";
+import { Link } from "react-router-dom";
 
 import { IconArrowLeft } from "./IconArrowLeft";
 
@@ -70,7 +70,7 @@ export function Pagination(props) {
       });
       return (
         <li key={index}>
-          <Link className={wrapperClassName} href={getPageUrl(item)}>
+          <Link className={wrapperClassName} to={getPageUrl(item)}>
             {item}
           </Link>
         </li>
@@ -96,10 +96,8 @@ export function Pagination(props) {
 
       return (
         <li key={index}>
-          <Link href={getPageUrl(page - 1)}>
-            <a className={wrapperClassName}>
-              <IconArrowLeft className={iconClassName} />
-            </a>
+          <Link to={getPageUrl(page - 1)} className={wrapperClassName}>
+            <IconArrowLeft className={iconClassName} />
           </Link>
         </li>
       );
@@ -118,10 +116,8 @@ export function Pagination(props) {
 
       return (
         <li key={index}>
-          <Link href={getPageUrl(page + 1)}>
-            <a className={wrapperClassName}>
-              <IconArrowLeft className={iconClassName} />
-            </a>
+          <Link to={getPageUrl(page + 1)} className={wrapperClassName}>
+            <IconArrowLeft className={iconClassName} />
           </Link>
         </li>
       );

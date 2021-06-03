@@ -1,19 +1,31 @@
 import React from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { Route } from "wouter";
+import { BrowserRouter, Switch, Route } from "react-router-dom";
 
 import { PageBook } from "./PageBook";
 import { PageHome } from "./PageHome";
 import { PageSeries } from "./PageSeries";
+import { ScrollToTop } from "./ScrollToTop";
 
 const queryClient = new QueryClient();
 
 export function App(props) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Route path="/series/:seriesId" component={PageSeries} />
-      <Route path="/book/:bookId" component={PageBook} />
-      <Route path="/" component={PageHome} />
-    </QueryClientProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <ScrollToTop />
+        <Switch>
+          <Route path="/series/:seriesId">
+            <PageSeries />
+          </Route>
+          <Route path="/book/:bookId">
+            <PageBook />
+          </Route>
+          <Route path="/">
+            <PageHome />
+          </Route>
+        </Switch>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 }
