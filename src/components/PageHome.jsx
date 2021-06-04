@@ -107,6 +107,7 @@ export function PageHome() {
       },
       { arrayFormat: "index" },
     );
+
     setShowFilterModal(false);
     history.push(
       `/${newLocationSearch.length > 0 ? `?${newLocationSearch}` : ""}`,
@@ -212,7 +213,6 @@ function Header(props) {
   }, []);
 
   function onKeyPress(e) {
-    console.log(e);
     if (event.charCode === 13) {
       onSearch(searchValue);
     }

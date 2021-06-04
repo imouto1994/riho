@@ -15,15 +15,9 @@ export function App(props) {
       <QueryClientProvider client={queryClient}>
         <ScrollToTop />
         <Switch>
-          <Route path="/series/:seriesId">
-            <PageSeries />
-          </Route>
-          <Route path="/book/:bookId">
-            <PageBook />
-          </Route>
-          <Route path="/">
-            <PageHome />
-          </Route>
+          <Route path="/series/:seriesId" component={PageSeries} />
+          <Route path="/book/:bookId" component={PageBook} />
+          <Route path="/" component={PageHome} />
         </Switch>
       </QueryClientProvider>
     </BrowserRouter>
