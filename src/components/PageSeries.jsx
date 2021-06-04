@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "react-query";
 
 import { IconBack } from "./IconBack";
@@ -19,10 +19,8 @@ import { parseName } from "../utils/string";
 
 import styles from "./PageSeries.module.css";
 
-export function PageSeries(props) {
-  const {
-    params: { seriesId },
-  } = props;
+export function PageSeries() {
+  const { seriesId } = useParams();
 
   // Fetch the series data
   const {

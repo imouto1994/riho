@@ -18,6 +18,14 @@
   margin: 0 4px;
 }
 
+@media screen and (max-width: 576px) {
+  .pageEntryWrapper {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+}
+
 .pageEntryWrapperSelected {
   border-color: #e84393;
   background: #e84393;
@@ -37,6 +45,12 @@
 .pageEntryIcon {
   width: 20px;
   fill: white;
+}
+
+@media screen and (max-width: 576px) {
+  .pageEntryIcon {
+    width: 16px;
+  }
 }
 
 .pageEntryIconDisabled {

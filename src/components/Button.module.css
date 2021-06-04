@@ -11,3 +11,10 @@
   background: transparent;
   color: #e84393;
 }
+
+@media screen and (max-width: 576px) {
+  .button {
+    font-size: 16px;
+    padding: 6px 24px;
+  }
+}

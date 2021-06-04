@@ -12,6 +12,13 @@
   transition: transform 0.3s ease;
 }
 
+@media screen and (max-width: 576px) {
+  .header {
+    height: 72px;
+    padding-left: 16px;
+  }
+}
+
 .headerHidden {
   transform: translateY(-96px);
 }
@@ -22,9 +29,22 @@
   fill: white;
 }
 
+@media screen and (max-width: 576px) {
+  .headerBackIcon {
+    height: 24px;
+    margin-right: 24px;
+  }
+}
+
 .headerTitle {
   font-size: 28px;
   font-weight: 700;
+}
+
+@media screen and (max-width: 576px) {
+  .headerTitle {
+    font-size: 20px;
+  }
 }
 
 .headerAuthor {
@@ -33,9 +53,21 @@
   font-weight: 600;
 }
 
+@media screen and (max-width: 576px) {
+  .headerAuthor {
+    font-size: 16px;
+  }
+}
+
 .page {
   width: 100%;
   margin-bottom: 32px;
+}
+
+@media screen and (max-width: 576px) {
+  .page {
+    margin-bottom: 16px;
+  }
 }
 
 .page:last-child {

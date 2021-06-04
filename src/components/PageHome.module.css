@@ -11,6 +11,12 @@
   z-index: 1;
 }
 
+@media screen and (max-width: 576px) {
+  .header {
+    height: 50px;
+  }
+}
+
 .headerSearchInput {
   flex: 1;
   width: 80%;
@@ -19,6 +25,13 @@
   background: rgb(32, 32, 32);
   color: rgb(200, 200, 200);
   padding: 8px 16px;
+}
+
+@media screen and (max-width: 576px) {
+  .headerSearchInput {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
 }
 
 .headerSearchInput::placeholder {
@@ -31,6 +44,14 @@
   fill: white;
   margin-left: 24px;
   font-size: 0;
+}
+
+@media screen and (max-width: 576px) {
+  .headerFilter {
+    flex: 0 0 24px;
+    width: 24px;
+    margin-left: 16px;
+  }
 }
 
 .headerFilterIcon {
@@ -56,11 +77,25 @@
   padding: 64px 0 32px;
 }
 
+@media screen and (max-width: 576px) {
+  .seriesGrid {
+    padding-top: 48px;
+  }
+}
+
 .series {
   flex: 0 0 calc(100% / 3);
   width: calc(100% / 3);
   padding: 4px 12px;
   margin-top: 8px;
+}
+
+@media screen and (max-width: 576px) {
+  .series {
+    flex: 0 0 50%;
+    width: 50%;
+    padding: 4px 8px;
+  }
 }
 
 .linkContainer {
@@ -100,6 +135,12 @@
   text-overflow: ellipsis;
 }
 
+@media screen and (max-width: 576px) {
+  .title {
+    font-size: 12px;
+  }
+}
+
 .filterModalOverlay {
   position: fixed;
   top: 0;
@@ -119,6 +160,12 @@
   background: black;
   z-index: 3;
   padding: 24px 0;
+}
+
+@media screen and (max-width: 576px) {
+  .filterModal {
+    padding: 16px 0;
+  }
 }
 
 .filterActions {
@@ -141,6 +188,12 @@
   margin-bottom: 12px;
 }
 
+@media screen and (max-width: 576px) {
+  .filterSectionTitle {
+    font-size: 18px;
+  }
+}
+
 .filterOption {
   display: flex;
   flex-flow: row nowrap;
@@ -158,6 +211,14 @@
   fill: #e84393;
 }
 
+@media screen and (max-width: 576px) {
+  .filterOptionIcon {
+    flex: 0 0 16px;
+    width: 16px;
+    margin-right: 20px;
+  }
+}
+
 .filterOptionIconHidden {
   visibility: hidden;
 }
@@ -165,4 +226,10 @@
 .filterOptionTitle {
   font-weight: 500;
   font-size: 20px;
+}
+
+@media screen and (max-width: 576px) {
+  .filterOptionTitle {
+    font-size: 16px;
+  }
 }

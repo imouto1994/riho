@@ -11,9 +11,22 @@
   padding-left: 32px;
 }
 
+@media screen and (max-width: 576px) {
+  .header {
+    height: 72px;
+    padding-left: 16px;
+  }
+}
+
 .headerBackIcon {
-  height: 40px;
+  height: 36px;
   fill: white;
+}
+
+@media screen and (max-width: 576px) {
+  .headerBackIcon {
+    height: 24px;
+  }
 }
 
 .heroBackgroundWrapper {
@@ -59,13 +72,33 @@
   align-items: center;
 }
 
+@media screen and (max-width: 576px) {
+  .infoContainer {
+    padding-top: 80px;
+  }
+}
+
 .infoThumbnailWrapper {
   position: relative;
-  width: 240px;
-  height: 360px;
+  flex: 0 0 25%;
+  width: 25%;
   margin-left: 32px;
   border-radius: 8px;
   overflow: hidden;
+}
+
+@media screen and (max-width: 576px) {
+  .infoThumbnailWrapper {
+    margin-left: 16px;
+    flex: 0 0 30%;
+    width: 30%;
+  }
+}
+
+.infoThumbnailWrapper::before {
+  display: block;
+  content: "";
+  padding-top: 150%;
 }
 
 .infoThumbnail {
@@ -79,6 +112,15 @@
 
 .infoContent {
   margin-left: 24px;
+  padding-right: 16px;
+  flex: 1;
+}
+
+@media screen and (max-width: 576px) {
+  .infoContent {
+    margin-left: 16px;
+    padding-right: 12px;
+  }
 }
 
 .infoTitle {
@@ -91,6 +133,12 @@
   text-overflow: ellipsis;
 }
 
+@media screen and (max-width: 576px) {
+  .infoTitle {
+    font-size: 20px;
+  }
+}
+
 .infoAuthor {
   color: #9fadbd;
   font-weight: 600;
@@ -101,6 +149,13 @@
   font-weight: 600;
 }
 
+@media screen and (max-width: 576px) {
+  .infoAuthor,
+  .infoCircle {
+    font-size: 12px;
+  }
+}
+
 .previewGrid {
   display: flex;
   flex-flow: row wrap;
@@ -108,11 +163,24 @@
   margin-top: 32px;
 }
 
+@media screen and (max-width: 576px) {
+  .previewGrid {
+    margin-top: 20px;
+  }
+}
+
 .preview {
   flex: 0 0 calc(100% / 4);
   width: calc(100% / 4);
   padding: 0 12px;
   margin-top: 16px;
+}
+
+@media screen and (max-width: 576px) {
+  .preview {
+    flex: 0 0 50%;
+    width: 50%;
+  }
 }
 
 .previewWrapper {
@@ -139,6 +207,12 @@
   padding: 0 32px;
 }
 
+@media screen and (max-width: 576px) {
+  .chapters {
+    padding: 0 16px;
+  }
+}
+
 .chapter {
   display: block;
   padding: 8px 0;
@@ -149,7 +223,19 @@
   font-weight: 600;
 }
 
+@media screen and (max-width: 576px) {
+  .chapterTitle {
+    font-size: 14px;
+  }
+}
+
 .chapterSubtitle {
   font-size: 14px;
   color: #9fadbd;
+}
+
+@media screen and (max-width: 576px) {
+  .chapterSubtitle {
+    font-size: 12px;
+  }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import classnames from "classnames";
 
@@ -18,9 +18,7 @@ import styles from "./PageBook.module.css";
 const PAGE_LOAD_BATCH_COUNT = 5;
 
 export function PageBook(props) {
-  const {
-    params: { bookId },
-  } = props;
+  const { bookId } = useParams();
   const [navHidden, setNavHidden] = useState(true);
   const [pageLimit, setPageLimit] = useState(PAGE_LOAD_BATCH_COUNT);
   const [pageLoadCount, setPageLoadCount] = useState(0);
