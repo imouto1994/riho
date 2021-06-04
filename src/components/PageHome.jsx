@@ -115,6 +115,7 @@ export function PageHome() {
   }
 
   function onSearch(newQuerySearch) {
+    delete params.page;
     if (newQuerySearch.trim() === "") {
       delete params.search;
     } else {
