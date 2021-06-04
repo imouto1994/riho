@@ -183,35 +183,6 @@ function Header(props) {
     setSearchValue(querySearch || "");
   }, [querySearch]);
 
-  useEffect(() => {
-    let prevScrollOffset = 0;
-    let translateTop = 0;
-
-    function onScroll() {
-      const scrollOffset =
-        document.documentElement.scrollTop || document.body.scrollTop;
-      const headerHeight = headerElement.current.offsetHeight;
-      const diff = scrollOffset - prevScrollOffset;
-
-      const prevTranslateTop = translateTop;
-      translateTop = translateTop + diff;
-      translateTop = Math.min(translateTop, headerHeight);
-      translateTop = Math.max(translateTop, 0);
-
-      if (translateTop !== prevTranslateTop) {
-        headerElement.current.style.top = `-${translateTop}px`;
-      }
-
-      prevScrollOffset = scrollOffset;
-    }
-
-    window.addEventListener("scroll", onScroll);
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, []);
-
   function onKeyPress(e) {
     if (event.charCode === 13) {
       onSearch(searchValue);
