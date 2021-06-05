@@ -8,8 +8,13 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  padding-left: 32px;
+  justify-content: space-between;
+  padding: 0 32px;
   transition: transform 0.3s ease;
+}
+
+.headerHidden {
+  transform: translateY(-96px);
 }
 
 @media screen and (max-width: 576px) {
@@ -17,10 +22,16 @@
     height: 72px;
     padding-left: 16px;
   }
+
+  .headerHidden {
+    transform: translateY(-72px);
+  }
 }
 
-.headerHidden {
-  transform: translateY(-96px);
+.headerLeftSection {
+  display: flex;
+  align-items: center;
+  flex: 1;
 }
 
 .headerBackIcon {
@@ -39,11 +50,16 @@
 .headerTitle {
   font-size: 28px;
   font-weight: 700;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media screen and (max-width: 576px) {
   .headerTitle {
-    font-size: 20px;
+    font-size: 16px;
   }
 }
 
@@ -55,8 +71,38 @@
 
 @media screen and (max-width: 576px) {
   .headerAuthor {
-    font-size: 16px;
+    font-size: 12px;
   }
+}
+
+.headerRightSection {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.headerGridButton {
+  flex: 0 0 40px;
+  width: 40px;
+  margin-left: 24px;
+  font-size: 0;
+}
+
+@media screen and (max-width: 576px) {
+  .headerGridButton {
+    flex: 0 0 24px;
+    width: 24px;
+    margin-left: 16px;
+  }
+}
+
+.headerGridIcon {
+  width: 100%;
+  fill: white;
+}
+
+.pageGridPreview {
+  display: flex;
+  flex-flow: row wrap;
 }
 
 .page {
@@ -70,8 +116,17 @@
   }
 }
 
-.page:last-child {
-  margin-top: 0;
+.pagePreview {
+  padding: 0 8px;
+  flex: 0 0 25%;
+  width: 25%;
+}
+
+@media screen and (max-width: 576px) {
+  .pagePreview {
+    flex: 0 0 calc(100% / 3);
+    width: calc(100% / 3);
+  }
 }
 
 .pageWrapper {
