@@ -7,7 +7,6 @@ export default defineConfig({
   plugins: [
     reactRefresh(),
     VitePWA({
-      srcDir: "src",
       manifest: {
         background_color: "#000",
         name: "Riho",
@@ -15,6 +14,18 @@ export default defineConfig({
         short_name: "Riho",
         start_url: "/",
         theme_color: "#000",
+        icons: [
+          {
+            src: "/icon-192.png",
+            type: "image/png",
+            sizes: "192x192",
+          },
+          {
+            src: "/icon-512.png",
+            type: "image/png",
+            sizes: "512x512",
+          },
+        ],
       },
       injectRegister: "inline",
       strategies: "injectManifest",
