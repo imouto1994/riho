@@ -5,6 +5,8 @@ import {
 } from "workbox-precaching";
 import { skipWaiting, clientsClaim } from "workbox-core";
 import { registerRoute } from "workbox-routing";
+import { CacheFirst } from "workbox-strategies";
+import { ExpirationPlugin } from "workbox-expiration";
 
 precacheAndRoute(self.__WB_MANIFEST);
 
@@ -17,10 +19,10 @@ clientsClaim();
 // Cache images
 registerRoute(
   /\.(?:png|gif|jpg|jpeg|webp|svg)$/,
-  new workbox.strategies.CacheFirst({
+  new CacheFirst({
     cacheName: "images",
     plugins: [
-      new workbox.expiration.Plugin({
+      new ExpirationPlugin({
         maxEntries: 200,
         maxAgeSeconds: 60 * 60 * 24 * 30,
       }),
