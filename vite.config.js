@@ -12,8 +12,10 @@ export default defineConfig({
         name: "Riho",
         orientation: "portrait",
         short_name: "Riho",
-        start_url: "/",
+        start_url: "https://riho94.noobsaigon.com/",
+        scope: "https://riho94.noobsaigon.com/",
         theme_color: "#000",
+        display: "fullscreen",
         icons: [
           {
             src: "/icon-192.png",
