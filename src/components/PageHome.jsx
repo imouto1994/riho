@@ -12,17 +12,23 @@ import { IconCheck } from "./IconCheck";
 import { IconAscending } from "./IconAscending";
 import { IconDescending } from "./IconDescending";
 import { IconFilter } from "./IconFilter";
-import { KEY_LIBRARIES, KEY_SERIES } from "../constants/query-key";
+import {
+  KEY_LIBRARIES,
+  KEY_TITLES,
+  KEY_TITLES_COUNT,
+} from "../constants/query-key";
 import { useLockBodyScroll } from "../hooks/lock-body-scroll";
 import { getLibraries } from "../services/library";
-import { getSeries, getSeriesThumbnailUrl } from "../services/series";
+import { getTitles, countTitles, getTitleCoverURL } from "../services/title";
 
 import styles from "./PageHome.module.css";
+
+const PAGE_SIZE = 24;
 
 export function PageHome() {
   const history = useHistory();
   const params = queryString.parse(window.location.search, {
-    arrayFormat: "index",
+    arrayFormat: "none",
   });
   const {
     libraries: queryLibraries,
@@ -40,23 +46,34 @@ export function PageHome() {
     error: librariesFetchError,
   } = useQuery(KEY_LIBRARIES, getLibraries, { initialData: [] });
 
-  // Fetch the list of series based on search query and filters
+  // Fetch the list of titles based on search query and filters
   const {
-    status: seriesFetchStatus,
-    data: seriesQueryResult,
-    error: seriesFetchError,
+    status: titlesFetchStatus,
+    data: titles,
+    error: titlesFetchError,
   } = useQuery(
-    [KEY_SERIES, queryPage, queryLibraries, querySort, querySearch],
+    [KEY_TITLES, queryPage, queryLibraries, querySort, querySearch],
     () =>
-      getSeries({
+      getTitles({
         page: queryPage,
         libraryId: queryLibraries,
         sort: querySort,
         search: querySearch,
+        size: PAGE_SIZE,
       }),
     {
       keepPreviousData: true,
     },
+  );
+  const {
+    status: countFetchStatus,
+    data: count,
+    error: countFetchError,
+  } = useQuery([KEY_TITLES_COUNT, queryLibraries, querySearch], () =>
+    countTitles({
+      libraryId: queryLibraries,
+      search: querySearch,
+    }),
   );
 
   function getPageUrl(page) {
@@ -67,30 +84,32 @@ export function PageHome() {
       params.page = pageIndex;
     }
     const newLocationSearch = queryString.stringify(params, {
-      arrayFormat: "index",
+      arrayFormat: "none",
     });
 
     return `/${newLocationSearch.length > 0 ? `?${newLocationSearch}` : ""}`;
   }
 
   function renderContent() {
-    if (seriesFetchStatus === "loading") {
+    if (titlesFetchStatus === "loading") {
       return (
         <div className={styles.loadingContainer}>
           <Loading className={styles.loadingIcon} />
         </div>
       );
     }
-    const { totalPages, number: pageNumber } = seriesQueryResult;
+    const pageNumber = parseInt(queryPage || "0", 10);
 
     return (
       <>
-        <SeriesGrid result={seriesQueryResult} />
-        <Pagination
-          count={totalPages}
-          page={pageNumber + 1}
-          getPageUrl={getPageUrl}
-        />
+        <TitlesGrid titles={titles} />
+        {count != null ? (
+          <Pagination
+            count={Math.ceil(count.value / PAGE_SIZE)}
+            page={pageNumber + 1}
+            getPageUrl={getPageUrl}
+          />
+        ) : null}
       </>
     );
   }
@@ -103,9 +122,9 @@ export function PageHome() {
           newQueryLibraries.length === libraries.length
             ? undefined
             : newQueryLibraries,
-        sort: newQuerySort === "createdDate,desc" ? undefined : newQuerySort,
+        sort: newQuerySort === "created_at" ? undefined : newQuerySort,
       },
-      { arrayFormat: "index" },
+      { arrayFormat: "none" },
     );
 
     setShowFilterModal(false);
@@ -122,7 +141,7 @@ export function PageHome() {
       params.search = newQuerySearch;
     }
     const newLocationSearch = queryString.stringify(params, {
-      arrayFormat: "index",
+      arrayFormat: "none",
     });
     history.push(
       `/${newLocationSearch.length > 0 ? `?${newLocationSearch}` : ""}`,
@@ -150,24 +169,24 @@ export function PageHome() {
   );
 }
 
-function SeriesGrid(props) {
-  const { result } = props;
-  if (result == null) {
+function TitlesGrid(props) {
+  const { titles } = props;
+  if (titles == null) {
     return null;
   }
 
   return (
-    <ul className={styles.seriesGrid}>
-      {result.content.map((series) => (
-        <li className={styles.series} key={series.id}>
-          <Link className={styles.linkContainer} to={`/series/${series.id}`}>
+    <ul className={styles.titlesGrid}>
+      {titles.map((title) => (
+        <li className={styles.titleEntry} key={title.id}>
+          <Link className={styles.linkContainer} to={`/title/${title.id}`}>
             <div className={styles.thumbnailWrapper}>
               <Image
                 className={styles.thumbnail}
-                src={getSeriesThumbnailUrl(series.id)}
+                src={getTitleCoverURL(title.id)}
               />
             </div>
-            <p className={styles.title}>{series.name}</p>
+            <p className={styles.title}>{title.name}</p>
           </Link>
         </li>
       ))}
@@ -195,7 +214,7 @@ function Header(props) {
       <input
         type="search"
         className={styles.headerSearchInput}
-        placeholder="Search series..."
+        placeholder="Search titles..."
         value={searchValue}
         onChange={(e) => setSearchValue(e.target.value)}
         onKeyPress={onKeyPress}
@@ -215,30 +234,28 @@ function FilterModal(props) {
   const [librariesFilter, setLibrariesFilter] = useState(
     new Set(queryLibraries || []),
   );
-  const [sortFilter, setSortFilter] = useState(querySort || "createdDate,desc");
+  const [sortFilter, setSortFilter] = useState(querySort || "created_at");
 
   useEffect(() => {
     setLibrariesFilter(new Set(queryLibraries || []));
   }, [queryLibraries]);
 
   useEffect(() => {
-    setSortFilter(querySort || "createdDate,desc");
+    setSortFilter(querySort || "created_at");
   }, [querySort]);
 
-  const [sortType, sortDirection] = sortFilter.split(",");
-
   function renderSortOption(type, text) {
-    const isSelected = type === sortType;
+    const isSelected = type === sortFilter;
     const iconClassName = classnames(styles.filterOptionIcon, {
       [styles.filterOptionIconHidden]: !isSelected,
     });
 
     return (
       <div className={styles.filterOption} onClick={() => onSortSelect(type)}>
-        {sortDirection === "asc" ? (
-          <IconAscending className={iconClassName} />
-        ) : (
+        {sortFilter === "created_at" ? (
           <IconDescending className={iconClassName} />
+        ) : (
+          <IconAscending className={iconClassName} />
         )}
         <p className={styles.filterOptionTitle}>{text}</p>
       </div>
@@ -256,10 +273,8 @@ function FilterModal(props) {
   }
 
   function onSortSelect(selectedType) {
-    if (sortType === selectedType) {
-      setSortFilter(`${sortType},${sortDirection === "asc" ? "desc" : "asc"}`);
-    } else {
-      setSortFilter(`${selectedType},asc`);
+    if (sortFilter != selectedType) {
+      setSortFilter(selectedType);
     }
   }
 
@@ -306,8 +321,8 @@ function FilterModal(props) {
         </div>
         <div className={styles.filterSection}>
           <p className={styles.filterSectionTitle}>Sort</p>
-          {renderSortOption("metadata.titleSort", "Alphabetically")}
-          {renderSortOption("createdDate", "Date added")}
+          {renderSortOption("name", "Alphabetically")}
+          {renderSortOption("created_at", "Date added")}
         </div>
       </div>
     </>

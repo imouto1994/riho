@@ -5,69 +5,66 @@ import { useQuery } from "react-query";
 import { IconBack } from "./IconBack";
 import { Image } from "./Image";
 import {
-  KEY_SERIES_BY_ID,
-  KEY_BOOKS_IN_SERIES,
+  KEY_TITLE_BY_ID,
+  KEY_BOOKS_IN_TITLE,
   KEY_BOOK_PAGES_BY_ID,
 } from "../constants/query-key";
-import { getSeriesById, getSeriesThumbnailUrl } from "../services/series";
+import { getTitleById, getTitleCoverURL } from "../services/title";
 import {
-  getBooksInSeries,
-  getBookPageUrl,
+  getBooksInTitle,
+  getBookPageURL,
   getBookPagesById,
 } from "../services/book";
 import { parseName } from "../utils/string";
 
-import styles from "./PageSeries.module.css";
+import styles from "./PageTitle.module.css";
 
-export function PageSeries() {
-  const { seriesId } = useParams();
+export function PageTitle() {
+  const { titleId } = useParams();
 
-  // Fetch the series data
+  // Fetch the title data
   const {
-    status: seriesFetchStatus,
-    data: series,
-    error: seriesFetchError,
-  } = useQuery([KEY_SERIES_BY_ID, seriesId], () => getSeriesById(seriesId));
+    status: titleFetchStatus,
+    data: title,
+    error: titleFetchError,
+  } = useQuery([KEY_TITLE_BY_ID, titleId], () => getTitleById(titleId));
 
-  // Fetch the list of books in the series
+  // Fetch the list of books in the title
   const {
     status: booksFetchStatus,
-    data: booksQueryResult,
+    data: books = [],
     error: booksFetchError,
-  } = useQuery([KEY_BOOKS_IN_SERIES, seriesId], () =>
-    getBooksInSeries(seriesId),
-  );
+  } = useQuery([KEY_BOOKS_IN_TITLE, titleId], () => getBooksInTitle(titleId));
 
-  // Fetch the dimension of each book page if there's only 1 book in the series
-  const books = booksQueryResult?.content || [];
+  // Fetch the dimension of each book page if there's only 1 book in the title
   const {
     status: singleBookPagesFetchStatus,
     data: singleBookPages,
     error: singleBookPagesFetchError,
   } = useQuery(
     [KEY_BOOK_PAGES_BY_ID, books[0]],
-    () => getBookPagesById(books[0]?.id),
+    () => getBookPagesById(books[0].id),
     {
       enabled: books.length === 1,
     },
   );
 
   if (
-    seriesFetchStatus === "loading" ||
+    titleFetchStatus === "loading" ||
     booksFetchStatus === "loading" ||
     (books.length === 1 && singleBookPagesFetchStatus === "loading")
   ) {
     return null;
   } else if (
-    seriesFetchStatus === "error" ||
+    titleFetchStatus === "error" ||
     booksFetchStatus === "error" ||
     (books.length === 1 && singleBookPagesFetchStatus === "error")
   ) {
     return null;
   }
 
-  const { name, booksCount } = series;
-  const { title, author, circle } = parseName(name);
+  const { name } = title;
+  const { title: titleName, author, circle } = parseName(name);
 
   return (
     <>
@@ -75,7 +72,7 @@ export function PageSeries() {
       <div className={styles.heroBackgroundWrapper}>
         <Image
           className={styles.heroBackground}
-          src={getSeriesThumbnailUrl(seriesId)}
+          src={getTitleCoverURL(titleId)}
         />
         <div className={styles.heroBackgroundOverlay} />
       </div>
@@ -83,11 +80,11 @@ export function PageSeries() {
         <div className={styles.infoThumbnailWrapper}>
           <Image
             className={styles.infoThumbnail}
-            src={getSeriesThumbnailUrl(seriesId)}
+            src={getTitleCoverURL(titleId)}
           />
         </div>
         <div className={styles.infoContent}>
-          <p className={styles.infoTitle}>{title}</p>
+          <p className={styles.infoTitle}>{titleName}</p>
           <p className={styles.infoAuthor}>{author}</p>
           <p className={styles.infoCircle}>{circle}</p>
         </div>
@@ -105,7 +102,7 @@ function ThumbnailsPreview(props) {
 
   return (
     <div className={styles.previewGrid}>
-      {[...Array(Math.min(8, book.media.pagesCount))].map((_, index) => (
+      {[...Array(Math.min(8, book.page_count))].map((_, index) => (
         <div className={styles.preview} key={index}>
           <Link className={styles.previewWrapper} to={`/book/${book.id}`}>
             <div
@@ -118,7 +115,7 @@ function ThumbnailsPreview(props) {
             />
             <Image
               className={styles.previewImage}
-              src={getBookPageUrl(book.id, index + 1)}
+              src={getBookPageURL(book.id, bookPages[index].index)}
             />
           </Link>
         </div>
@@ -140,7 +137,7 @@ function ChaptersList(props) {
         >
           <div className={styles.chapterTitle}>{chapter.name}</div>
           <div className={styles.chapterSubtitle}>
-            {`${chapter.media.pagesCount} pages`}
+            {`${chapter.page_count} pages`}
           </div>
         </Link>
       ))}

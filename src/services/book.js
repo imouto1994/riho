@@ -1,36 +1,22 @@
 import { get } from "../utils/request";
 
-export async function getBooksInSeries(seriesId, queryParams = {}) {
-  const { page = 0, size = 100, sort = "name,asc" } = queryParams;
-
-  const response = await get(`/api/v1/series/${seriesId}/books`, {
-    params: {
-      page,
-      size,
-      sort,
-    },
-  });
+export async function getBooksInTitle(titleId) {
+  const response = await get(`/api/title/${titleId}/books`);
   return response.data;
 }
 
 export async function getBookById(bookId) {
-  const response = await get(`/api/v1/books/${bookId}`);
+  const response = await get(`/api/book/${bookId}`);
   return response.data;
 }
 
 export async function getBookPagesById(bookId) {
-  const response = await get(`/api/v1/books/${bookId}/pages`);
+  const response = await get(`/api/book/${bookId}/pages`);
   return response.data;
 }
 
-export function getBookPagePreview(bookId, pageIndex) {
+export function getBookPageURL(bookId, pageIndex) {
   return `${
-    import.meta.env.VITE_KOMGA_ENDPOINT
-  }/api/v1/books/${bookId}/pages/${pageIndex}/thumbnail`;
-}
-
-export function getBookPageUrl(bookId, pageIndex) {
-  return `${
-    import.meta.env.VITE_KOMGA_ENDPOINT
-  }/api/v1/books/${bookId}/pages/${pageIndex}`;
+    import.meta.env.VITE_YUME_ENDPOINT
+  }/api/book/${bookId}/page/${pageIndex}`;
 }

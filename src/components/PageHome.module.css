@@ -70,19 +70,19 @@
   width: 100%;
 }
 
-.seriesGrid {
+.titlesGrid {
   display: flex;
   flex-flow: row wrap;
   padding: 64px 0 32px;
 }
 
 @media screen and (max-width: 576px) {
-  .seriesGrid {
+  .titlesGrid {
     padding-top: 48px;
   }
 }
 
-.series {
+.titleEntry {
   flex: 0 0 calc(100% / 3);
   width: calc(100% / 3);
   padding: 4px 12px;
@@ -90,7 +90,7 @@
 }
 
 @media screen and (max-width: 576px) {
-  .series {
+  .titleEntry {
     flex: 0 0 50%;
     width: 50%;
     padding: 4px 8px;

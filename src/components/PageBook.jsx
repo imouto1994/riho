@@ -8,7 +8,7 @@ import { IconBack } from "./IconBack";
 import { IconGrid } from "./IconGrid";
 import { KEY_BOOK_BY_ID, KEY_BOOK_PAGES_BY_ID } from "../constants/query-key";
 import {
-  getBookPageUrl,
+  getBookPageURL,
   getBookById,
   getBookPagesById,
 } from "../services/book";
@@ -89,11 +89,11 @@ export function PageBook(props) {
         title={title}
         author={author}
         hidden={navHidden}
-        seriesId={book.seriesId}
+        titleId={book.title_id}
         onGridButtonClick={onGridButtonClick}
       />
       <div className={gridClassName}>
-        {[...Array(book.media.pagesCount)].map((_, index) => (
+        {[...Array(book.page_count)].map((_, index) => (
           <div
             className={pageClassName}
             key={index}
@@ -111,7 +111,7 @@ export function PageBook(props) {
               />
               <Image
                 className={styles.pageImage}
-                src={getBookPageUrl(bookId, index + 1)}
+                src={getBookPageURL(bookId, bookPages[index].index)}
                 onImageLoad={onPageLoad}
                 shouldLoad={index < pageLimit}
               />
@@ -124,7 +124,7 @@ export function PageBook(props) {
 }
 
 function Header(props) {
-  const { title, author, hidden, seriesId, onGridButtonClick } = props;
+  const { title, author, hidden, titleId, onGridButtonClick } = props;
   const headerClassName = classnames(styles.header, {
     [styles.headerHidden]: hidden,
   });
@@ -132,7 +132,7 @@ function Header(props) {
   return (
     <div className={headerClassName}>
       <div className={styles.headerLeftSection}>
-        <Link to={`/series/${seriesId}`}>
+        <Link to={`/title/${titleId}`}>
           <IconBack className={styles.headerBackIcon} />
         </Link>
         <div>

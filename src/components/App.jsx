@@ -4,7 +4,7 @@ import { BrowserRouter, Switch, Route } from "react-router-dom";
 
 import { PageBook } from "./PageBook";
 import { PageHome } from "./PageHome";
-import { PageSeries } from "./PageSeries";
+import { PageTitle } from "./PageTitle";
 import { ScrollToTop } from "./ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -15,7 +15,7 @@ export function App(props) {
       <QueryClientProvider client={queryClient}>
         <ScrollToTop />
         <Switch>
-          <Route path="/series/:seriesId" component={PageSeries} />
+          <Route path="/title/:titleId" component={PageTitle} />
           <Route path="/book/:bookId" component={PageBook} />
           <Route path="/" component={PageHome} />
         </Switch>
