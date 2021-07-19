@@ -7,6 +7,7 @@ export function Image(props) {
   const { className, src, shouldLoad = true, onImageLoad } = props;
   const imageRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   function onLoad() {
     setIsLoaded(true);
@@ -16,14 +17,17 @@ export function Image(props) {
   }
 
   useEffect(() => {
+    if (isMounted) {
+      setIsLoaded(false);
+    }
+  }, [src]);
+
+  useEffect(() => {
+    setIsMounted(true);
     if (imageRef.current != null && imageRef.current.complete) {
       onLoad();
     }
   }, []);
-
-  useEffect(() => {
-    setIsLoaded(false);
-  }, [src]);
 
   const imageClassName = classnames(className, {
     [styles.imageHidden]: !isLoaded,
