@@ -10,9 +10,11 @@ export function Image(props) {
   const [isMounted, setIsMounted] = useState(false);
 
   function onLoad() {
-    setIsLoaded(true);
-    if (onImageLoad != null) {
-      onImageLoad();
+    if (!isLoaded) {
+      setIsLoaded(true);
+      if (onImageLoad != null) {
+        onImageLoad();
+      }
     }
   }
 
@@ -24,9 +26,6 @@ export function Image(props) {
 
   useEffect(() => {
     setIsMounted(true);
-    if (imageRef.current != null && imageRef.current.complete) {
-      onLoad();
-    }
   }, []);
 
   const imageClassName = classnames(className, {
