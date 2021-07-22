@@ -95,19 +95,12 @@
   }
 }
 
-.infoThumbnailWrapper::before {
-  display: block;
-  content: "";
-  padding-top: 150%;
-}
-
 .infoThumbnail {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
 
 .infoContent {

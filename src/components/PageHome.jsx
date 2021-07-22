@@ -36,6 +36,7 @@ export function PageHome() {
     page: queryPage,
     search: querySearch,
   } = params;
+
   const [inputSearch, setInputSearch] = useState("");
   const [showFilterModal, setShowFilterModal] = useState(false);
 
@@ -181,6 +182,14 @@ function TitlesGrid(props) {
         <li className={styles.titleEntry} key={title.id}>
           <Link className={styles.linkContainer} to={`/title/${title.id}`}>
             <div className={styles.thumbnailWrapper}>
+              <div
+                className={styles.thumbnailPadding}
+                style={{
+                  paddingTop: `${
+                    (title.cover_height * 100) / title.cover_width
+                  }%`,
+                }}
+              />
               <Image
                 className={styles.thumbnail}
                 src={getTitleCoverURL(title.id)}
@@ -264,10 +273,10 @@ function FilterModal(props) {
 
   function onLibrarySelect(library) {
     const newLibrariesFilter = new Set(librariesFilter);
-    if (newLibrariesFilter.has(library.id)) {
-      newLibrariesFilter.delete(library.id);
+    if (newLibrariesFilter.has(`${library.id}`)) {
+      newLibrariesFilter.delete(`${library.id}`);
     } else {
-      newLibrariesFilter.add(library.id);
+      newLibrariesFilter.add(`${library.id}`);
     }
     setLibrariesFilter(newLibrariesFilter);
   }
@@ -280,7 +289,7 @@ function FilterModal(props) {
 
   function onReset() {
     setLibrariesFilter(new Set([]));
-    setSortFilter("createdDate,desc");
+    setSortFilter("created_at");
   }
 
   function onFilterButtonClick() {
@@ -302,7 +311,7 @@ function FilterModal(props) {
         <div className={styles.filterSection}>
           <p className={styles.filterSectionTitle}>Libraries</p>
           {libraries.map((library) => {
-            const isSelected = librariesFilter.has(library.id);
+            const isSelected = librariesFilter.has(`${library.id}`);
             const iconClassName = classnames(styles.filterOptionIcon, {
               [styles.filterOptionIconHidden]: !isSelected,
             });

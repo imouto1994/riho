@@ -78,6 +78,12 @@ export function PageTitle() {
       </div>
       <div className={styles.infoContainer}>
         <div className={styles.infoThumbnailWrapper}>
+          <div
+            className={styles.infoThumbnailPadding}
+            style={{
+              paddingTop: `${(title.cover_height * 100) / title.cover_width}%`,
+            }}
+          ></div>
           <Image
             className={styles.infoThumbnail}
             src={getTitleCoverURL(titleId)}
