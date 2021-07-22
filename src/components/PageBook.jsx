@@ -66,12 +66,50 @@ export function PageBook(props) {
     return null;
   }
 
-  function onPageClick(pageIndex) {
+  function onPageClick(e, pageIndex) {
     if (showGrid) {
       setShowGrid(false);
       setSelectedPageIndex(pageIndex);
     } else {
-      setNavHidden(!navHidden);
+      const windowWidth = window.innerWidth;
+      const clickX = e.clientX;
+      if (clickX < windowWidth / 4) {
+        const currentPageEl = document.getElementById(`page-${pageIndex}`);
+        const currentPageTop = currentPageEl.getBoundingClientRect().top;
+        if (currentPageTop < -5) {
+          currentPageEl.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "nearest",
+          });
+        } else if (pageIndex > 0) {
+          const prevPageEl = document.getElementById(`page-${pageIndex - 1}`);
+          prevPageEl.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "nearest",
+          });
+        }
+      } else if (clickX < (3 * windowWidth) / 4) {
+        setNavHidden(!navHidden);
+      } else {
+        const currentPageEl = document.getElementById(`page-${pageIndex}`);
+        const currentPageTop = currentPageEl.getBoundingClientRect().top;
+        if (currentPageTop > 5) {
+          currentPageEl.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "nearest",
+          });
+        } else if (pageIndex < bookPages.length - 1) {
+          const nextPageEl = document.getElementById(`page-${pageIndex + 1}`);
+          nextPageEl.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+            inline: "nearest",
+          });
+        }
+      }
     }
   }
 
@@ -117,7 +155,7 @@ export function PageBook(props) {
           <div
             className={pageClassName}
             key={index}
-            onClick={() => onPageClick(index)}
+            onClick={(e) => onPageClick(e, index)}
             id={`page-${index}`}
           >
             <div className={styles.pageWrapper}>
