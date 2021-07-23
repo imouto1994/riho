@@ -12,6 +12,7 @@ import { IconSettings } from "./IconSettings";
 import { KEY_BOOK_BY_ID, KEY_BOOK_PAGES_BY_ID } from "../constants/query-key";
 import { useLockBodyScroll } from "../hooks/lock-body-scroll";
 import { useLocalStorage } from "../hooks/local-storage";
+import { useWindowSize } from "../hooks/window-size";
 import {
   getBookPageURL,
   getBookById,
@@ -33,8 +34,10 @@ export function PageBook(props) {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [readingMode, setReadingMode] = useLocalStorage(
     "reading_mode",
-    "manga",
+    "width",
   );
+  const { width: windowWidth, height: windowHeight } = useWindowSize();
+  const windowRatio = windowWidth / windowHeight;
 
   const {
     status: bookFetchStatus,
@@ -77,18 +80,10 @@ export function PageBook(props) {
         const currentPageEl = document.getElementById(`page-${pageIndex}`);
         const currentPageTop = currentPageEl.getBoundingClientRect().top;
         if (currentPageTop < -5) {
-          currentPageEl.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "nearest",
-          });
+          currentPageEl.scrollIntoView();
         } else if (pageIndex > 0) {
           const prevPageEl = document.getElementById(`page-${pageIndex - 1}`);
-          prevPageEl.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "nearest",
-          });
+          prevPageEl.scrollIntoView();
         }
       } else if (clickX < (3 * windowWidth) / 4) {
         setNavHidden(!navHidden);
@@ -96,18 +91,10 @@ export function PageBook(props) {
         const currentPageEl = document.getElementById(`page-${pageIndex}`);
         const currentPageTop = currentPageEl.getBoundingClientRect().top;
         if (currentPageTop > 5) {
-          currentPageEl.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "nearest",
-          });
+          currentPageEl.scrollIntoView();
         } else if (pageIndex < bookPages.length - 1) {
           const nextPageEl = document.getElementById(`page-${pageIndex + 1}`);
-          nextPageEl.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-            inline: "nearest",
-          });
+          nextPageEl.scrollIntoView();
         }
       }
     }
@@ -131,13 +118,58 @@ export function PageBook(props) {
     setReadingMode(newReadingMode);
   }
 
+  function renderPage(_, index) {
+    const bookPage = bookPages[index];
+    const bookPageRatio = bookPage.width / bookPage.height;
+    const shouldSpanWidth =
+      showGrid || readingMode !== "height" || bookPageRatio > windowRatio;
+
+    const pageClassName = classnames(styles.page, {
+      [styles.pagePreview]: showGrid,
+      [styles.pageSpanWidth]: shouldSpanWidth,
+      [styles.pageSpanHeight]: !shouldSpanWidth,
+      [styles.pageWebtoon]: !showGrid && readingMode === "webtoon",
+    });
+
+    return (
+      <div
+        className={pageClassName}
+        key={index}
+        onClick={(e) => onPageClick(e, index)}
+        id={`page-${index}`}
+      >
+        <div
+          className={styles.pageWrapper}
+          style={
+            !shouldSpanWidth
+              ? { width: `${(bookPage.width * 100) / bookPage.height}vh` }
+              : undefined
+          }
+        >
+          <div
+            className={styles.pagePadding}
+            style={
+              shouldSpanWidth
+                ? {
+                    paddingTop: `${(bookPage.height * 100) / bookPage.width}%`,
+                  }
+                : undefined
+            }
+          />
+          <Image
+            className={styles.pageImage}
+            src={getBookPageURL(bookId, bookPages[index].index)}
+            onImageLoad={onPageLoad}
+            shouldLoad={index < pageLimit}
+          />
+        </div>
+      </div>
+    );
+  }
+
   const { title, author } = parseName(book.name);
   const gridClassName = classnames(styles.pageGrid, {
     [styles.pageGridPreview]: showGrid,
-  });
-  const pageClassName = classnames(styles.page, {
-    [styles.pagePreview]: showGrid,
-    [styles.pageWebtoon]: !showGrid && readingMode === "webtoon",
   });
 
   return (
@@ -151,31 +183,7 @@ export function PageBook(props) {
         onSettingsButtonClick={onSettingsButtonClick}
       />
       <div className={gridClassName}>
-        {[...Array(book.page_count)].map((_, index) => (
-          <div
-            className={pageClassName}
-            key={index}
-            onClick={(e) => onPageClick(e, index)}
-            id={`page-${index}`}
-          >
-            <div className={styles.pageWrapper}>
-              <div
-                className={styles.pagePadding}
-                style={{
-                  paddingTop: `${
-                    (bookPages[index].height * 100) / bookPages[index].width
-                  }%`,
-                }}
-              />
-              <Image
-                className={styles.pageImage}
-                src={getBookPageURL(bookId, bookPages[index].index)}
-                onImageLoad={onPageLoad}
-                shouldLoad={index < pageLimit}
-              />
-            </div>
-          </div>
-        ))}
+        {[...Array(bookPages.length)].map(renderPage)}
       </div>
       {showSettingsModal && (
         <SettingsModal
@@ -247,7 +255,7 @@ function SettingsModal(props) {
   }
 
   function onReset() {
-    onReadingModeChange("manga");
+    onReadingModeChange("width");
   }
 
   return (
@@ -262,7 +270,8 @@ function SettingsModal(props) {
         </div>
         <div className={styles.settingsSection}>
           <p className={styles.settingsSectionTitle}>Reading Mode</p>
-          {renderReadingModeOption("manga", "Manga")}
+          {renderReadingModeOption("width", "Width")}
+          {renderReadingModeOption("height", "Height")}
           {renderReadingModeOption("webtoon", "Webtoon")}
         </div>
       </div>
