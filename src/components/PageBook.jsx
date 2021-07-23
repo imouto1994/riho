@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useHistory } from "react-router-dom";
 import { useQuery } from "react-query";
 import classnames from "classnames";
 import { useSwipeable } from "react-swipeable";
@@ -10,7 +10,11 @@ import { IconCheck } from "./IconCheck";
 import { Logo } from "./Logo";
 import { IconGrid } from "./IconGrid";
 import { IconSettings } from "./IconSettings";
-import { KEY_BOOK_BY_ID, KEY_BOOK_PAGES_BY_ID } from "../constants/query-key";
+import {
+  KEY_BOOK_BY_ID,
+  KEY_BOOK_PAGES_BY_ID,
+  KEY_BOOKS_IN_TITLE,
+} from "../constants/query-key";
 import { useLockBodyScroll } from "../hooks/lock-body-scroll";
 import { useLocalStorage } from "../hooks/local-storage";
 import { useWindowSize } from "../hooks/window-size";
@@ -18,6 +22,7 @@ import {
   getBookPageURL,
   getBookById,
   getBookPagesById,
+  getBooksInTitle,
 } from "../services/book";
 import { parseName } from "../utils/string";
 
@@ -65,6 +70,16 @@ export function PageBook(props) {
     data: bookPages,
     error: bookPagesFetchError,
   } = useQuery([KEY_BOOK_PAGES_BY_ID, bookId], () => getBookPagesById(bookId));
+
+  const titleId = book?.title_id;
+
+  const {
+    status: booksFetchStatus,
+    data: books = [],
+    error: booksFetchError,
+  } = useQuery([KEY_BOOKS_IN_TITLE, titleId], () => getBooksInTitle(titleId), {
+    enabled: titleId != null,
+  });
 
   const {
     status: altBookPagesFetchStatus,
@@ -233,6 +248,18 @@ export function PageBook(props) {
     [styles.pageGridPreview]: showGrid,
   });
 
+  let prevId = null;
+  let nextId = null;
+  if (books.length > 2) {
+    const bookIndex = books.map((b) => b.id).indexOf(book.id);
+    if (bookIndex > 0) {
+      prevId = books[bookIndex - 1].id;
+    }
+    if (bookIndex < books.length - 1) {
+      nextId = books[bookIndex + 1].id;
+    }
+  }
+
   return (
     <>
       <Header
@@ -259,6 +286,9 @@ export function PageBook(props) {
           onReadingModeChange={onSettingsReadingModeChange}
         />
       )}
+      {books.length > 2 ? (
+        <Footer prevBookId={prevId} nextBookId={nextId} hidden={navHidden} />
+      ) : null}
     </>
   );
 }
@@ -273,7 +303,7 @@ function Header(props) {
   return (
     <div className={headerClassName}>
       <div className={styles.headerLeftSection}>
-        <Link to="/" className={styles.headerBackLink}>
+        <Link to={`/title/${titleId}`} className={styles.headerBackLink}>
           <Logo className={styles.headerBackIcon} />
         </Link>
         <div>
@@ -287,6 +317,37 @@ function Header(props) {
         <button className={styles.headerButton} onClick={onGridButtonClick}>
           <IconGrid className={styles.headerIcon} />
         </button>
+      </div>
+    </div>
+  );
+}
+
+function Footer(props) {
+  const history = useHistory();
+  const { nextBookId, prevBookId, hidden } = props;
+  const footerClassName = classnames(styles.footer, {
+    [styles.footerHidden]: hidden,
+  });
+
+  function onPrevClick() {
+    history.push(`/book/${prevBookId}`);
+  }
+
+  function onNextClick() {
+    history.push(`/book/${nextBookId}`);
+  }
+
+  return (
+    <div className={footerClassName}>
+      <div className={styles.footerLeftSection}>
+        {prevBookId != null ? (
+          <Button onClick={onPrevClick}>Previous Chapter</Button>
+        ) : null}
+      </div>
+      <div className={styles.footerRightSection}>
+        {nextBookId != null ? (
+          <Button onClick={onNextClick}>Next Chapter</Button>
+        ) : null}
       </div>
     </div>
   );
