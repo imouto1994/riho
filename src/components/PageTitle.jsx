@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "react-query";
 
-import { IconBack } from "./IconBack";
+import { Logo } from "./Logo";
 import { Image } from "./Image";
 import {
   KEY_TITLE_BY_ID,
@@ -133,6 +133,35 @@ function ThumbnailsPreview(props) {
 function ChaptersList(props) {
   const { chapters } = props;
 
+  if (chapters.length === 2) {
+    const enChapter = chapters[0];
+    const jpChapter = chapters[1];
+    return (
+      <div className={styles.chapters}>
+        <Link
+          className={styles.chapter}
+          key={enChapter.id}
+          to={`/book/${enChapter.id}/${jpChapter.id}`}
+        >
+          <div className={styles.chapterTitle}>{enChapter.name}</div>
+          <div className={styles.chapterSubtitle}>
+            {`${enChapter.page_count} pages`}
+          </div>
+        </Link>
+        <Link
+          className={styles.chapter}
+          key={jpChapter.id}
+          to={`/book/${jpChapter.id}/${enChapter.id}`}
+        >
+          <div className={styles.chapterTitle}>{jpChapter.name}</div>
+          <div className={styles.chapterSubtitle}>
+            {`${jpChapter.page_count} pages`}
+          </div>
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.chapters}>
       {chapters.map((chapter) => (
@@ -154,8 +183,8 @@ function ChaptersList(props) {
 function Header() {
   return (
     <div className={styles.header}>
-      <Link to="/">
-        <IconBack className={styles.headerBackIcon} />
+      <Link to="/" className={styles.headerBackLink}>
+        <Logo className={styles.headerBackIcon} />
       </Link>
     </div>
   );

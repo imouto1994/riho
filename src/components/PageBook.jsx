@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import classnames from "classnames";
+import { useSwipeable } from "react-swipeable";
 
 import { Button } from "./Button";
 import { Image } from "./Image";
 import { IconCheck } from "./IconCheck";
-import { IconBack } from "./IconBack";
+import { Logo } from "./Logo";
 import { IconGrid } from "./IconGrid";
 import { IconSettings } from "./IconSettings";
 import { KEY_BOOK_BY_ID, KEY_BOOK_PAGES_BY_ID } from "../constants/query-key";
@@ -25,13 +26,19 @@ import styles from "./PageBook.module.css";
 const PAGE_LOAD_BATCH_COUNT = 5;
 
 export function PageBook(props) {
-  const { bookId } = useParams();
+  const { bookIds: bookIdsParam } = useParams();
+  const bookIds = bookIdsParam.split("/");
+  const bookId = bookIds[0];
+  const altBookId = bookIds[1];
   const [showGrid, setShowGrid] = useState(false);
   const [selectedPageIndex, setSelectedPageIndex] = useState(-1);
   const [navHidden, setNavHidden] = useState(true);
   const [pageLimit, setPageLimit] = useState(PAGE_LOAD_BATCH_COUNT);
   const [pageLoadCount, setPageLoadCount] = useState(0);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showAlt, setShowAlt] = useState(false);
+  const [altPageLimit, setAltPageLimit] = useState(PAGE_LOAD_BATCH_COUNT);
+  const [altPageLoadCount, setAltPageLoadCount] = useState(0);
   const [readingMode, setReadingMode] = useLocalStorage(
     "reading_mode",
     "width",
@@ -46,10 +53,26 @@ export function PageBook(props) {
   } = useQuery([KEY_BOOK_BY_ID, bookId], () => getBookById(bookId));
 
   const {
+    status: altBookFetchStatus,
+    data: altBook,
+    error: altBookFetchError,
+  } = useQuery([KEY_BOOK_BY_ID, altBookId], () => getBookById(altBookId), {
+    enabled: altBookId != null,
+  });
+
+  const {
     status: bookPagesFetchStatus,
     data: bookPages,
     error: bookPagesFetchError,
   } = useQuery([KEY_BOOK_PAGES_BY_ID, bookId], () => getBookPagesById(bookId));
+
+  const {
+    status: altBookPagesFetchStatus,
+    data: altBookPages,
+    error: altBookPagesFetchError,
+  } = useQuery([KEY_BOOK_PAGES_BY_ID, altBookId], () =>
+    getBookPagesById(altBookId),
+  );
 
   useEffect(() => {
     if (pageLoadCount === pageLimit) {
@@ -58,18 +81,42 @@ export function PageBook(props) {
   }, [pageLoadCount]);
 
   useEffect(() => {
+    if (altPageLoadCount === altPageLimit) {
+      setAltPageLimit((prevLimit) => prevLimit + PAGE_LOAD_BATCH_COUNT);
+    }
+  }, [altPageLoadCount]);
+
+  useEffect(() => {
     if (selectedPageIndex >= 0) {
-      document.getElementById(`page-${selectedPageIndex}`).scrollIntoView();
+      document
+        .getElementById(`${showAlt ? "alt-" : ""}page-${selectedPageIndex}`)
+        .scrollIntoView();
     }
   }, [selectedPageIndex]);
 
-  if (bookFetchStatus === "loading" || bookPagesFetchStatus === "loading") {
+  const handlers = useSwipeable({
+    onSwipedRight: (eventData) => {
+      setShowAlt((flag) => !flag);
+    },
+  });
+
+  if (
+    bookFetchStatus === "loading" ||
+    bookPagesFetchStatus === "loading" ||
+    (altBookId != null && altBookFetchStatus === "loading") ||
+    (altBookId != null && altBookPagesFetchStatus === "loading")
+  ) {
     return null;
-  } else if (bookFetchStatus === "error" || bookPagesFetchStatus === "error") {
+  } else if (
+    bookFetchStatus === "error" ||
+    bookPagesFetchStatus === "error" ||
+    (altBookId != null && altBookFetchStatus === "error") ||
+    (altBookId != null && altBookPagesFetchStatus === "error")
+  ) {
     return null;
   }
 
-  function onPageClick(e, pageIndex) {
+  function onPageClick(e, pageIndex, isAlt) {
     if (showGrid) {
       setShowGrid(false);
       setSelectedPageIndex(pageIndex);
@@ -77,23 +124,31 @@ export function PageBook(props) {
       const windowWidth = window.innerWidth;
       const clickX = e.clientX;
       if (clickX < windowWidth / 4) {
-        const currentPageEl = document.getElementById(`page-${pageIndex}`);
+        const currentPageEl = document.getElementById(
+          `${isAlt ? "alt-" : ""}page-${pageIndex}`,
+        );
         const currentPageTop = currentPageEl.getBoundingClientRect().top;
         if (currentPageTop < -5) {
           currentPageEl.scrollIntoView();
         } else if (pageIndex > 0) {
-          const prevPageEl = document.getElementById(`page-${pageIndex - 1}`);
+          const prevPageEl = document.getElementById(
+            `${isAlt ? "alt-" : ""}page-${pageIndex - 1}`,
+          );
           prevPageEl.scrollIntoView();
         }
       } else if (clickX < (3 * windowWidth) / 4) {
         setNavHidden(!navHidden);
       } else {
-        const currentPageEl = document.getElementById(`page-${pageIndex}`);
+        const currentPageEl = document.getElementById(
+          `${isAlt ? "alt-" : ""}page-${pageIndex}`,
+        );
         const currentPageTop = currentPageEl.getBoundingClientRect().top;
         if (currentPageTop > 5) {
           currentPageEl.scrollIntoView();
         } else if (pageIndex < bookPages.length - 1) {
-          const nextPageEl = document.getElementById(`page-${pageIndex + 1}`);
+          const nextPageEl = document.getElementById(
+            `${isAlt ? "alt-" : ""}page-${pageIndex + 1}`,
+          );
           nextPageEl.scrollIntoView();
         }
       }
@@ -102,6 +157,10 @@ export function PageBook(props) {
 
   function onPageLoad() {
     setPageLoadCount((prevCount) => prevCount + 1);
+  }
+
+  function onAltPageLoad() {
+    setAltPageLoadCount((prevCount) => prevCount + 1);
   }
 
   function onGridButtonClick() {
@@ -118,13 +177,14 @@ export function PageBook(props) {
     setReadingMode(newReadingMode);
   }
 
-  function renderPage(_, index) {
-    const bookPage = bookPages[index];
+  function renderPage(index, isAlt) {
+    const bookPage = isAlt ? altBookPages[index] : bookPages[index];
     const bookPageRatio = bookPage.width / bookPage.height;
     const shouldSpanWidth =
       showGrid || readingMode !== "height" || bookPageRatio > windowRatio;
 
     const pageClassName = classnames(styles.page, {
+      [styles.pageHidden]: isAlt !== showAlt,
       [styles.pagePreview]: showGrid,
       [styles.pageSpanWidth]: shouldSpanWidth,
       [styles.pageSpanHeight]: !shouldSpanWidth,
@@ -135,8 +195,8 @@ export function PageBook(props) {
       <div
         className={pageClassName}
         key={index}
-        onClick={(e) => onPageClick(e, index)}
-        id={`page-${index}`}
+        onClick={(e) => onPageClick(e, index, isAlt)}
+        id={`${isAlt ? "alt-" : ""}page-${index}`}
       >
         <div
           className={styles.pageWrapper}
@@ -158,8 +218,8 @@ export function PageBook(props) {
           />
           <Image
             className={styles.pageImage}
-            src={getBookPageURL(bookId, bookPages[index].index)}
-            onImageLoad={onPageLoad}
+            src={getBookPageURL(isAlt ? altBookId : bookId, bookPage.index)}
+            onImageLoad={isAlt ? onAltPageLoad : onPageLoad}
             shouldLoad={index < pageLimit}
           />
         </div>
@@ -167,7 +227,8 @@ export function PageBook(props) {
     );
   }
 
-  const { title, author } = parseName(book.name);
+  const { title } = parseName(book.name);
+  const { title: altTitle } = parseName(altBookId != null ? altBook.name : "");
   const gridClassName = classnames(styles.pageGrid, {
     [styles.pageGridPreview]: showGrid,
   });
@@ -175,15 +236,21 @@ export function PageBook(props) {
   return (
     <>
       <Header
-        title={title}
-        author={author}
+        title={showAlt ? altTitle : title}
         hidden={navHidden}
         titleId={book.title_id}
         onGridButtonClick={onGridButtonClick}
         onSettingsButtonClick={onSettingsButtonClick}
       />
-      <div className={gridClassName}>
-        {[...Array(bookPages.length)].map(renderPage)}
+      <div className={gridClassName} {...(altBookId != null ? handlers : {})}>
+        {[...Array(bookPages.length)].map((_, index) =>
+          renderPage(index, false),
+        )}
+        {altBookId != null
+          ? [...Array(altBookPages.length)].map((_, index) =>
+              renderPage(index, true),
+            )
+          : null}
       </div>
       {showSettingsModal && (
         <SettingsModal
@@ -197,14 +264,8 @@ export function PageBook(props) {
 }
 
 function Header(props) {
-  const {
-    title,
-    author,
-    hidden,
-    titleId,
-    onGridButtonClick,
-    onSettingsButtonClick,
-  } = props;
+  const { title, hidden, titleId, onGridButtonClick, onSettingsButtonClick } =
+    props;
   const headerClassName = classnames(styles.header, {
     [styles.headerHidden]: hidden,
   });
@@ -212,12 +273,11 @@ function Header(props) {
   return (
     <div className={headerClassName}>
       <div className={styles.headerLeftSection}>
-        <Link to={`/title/${titleId}`}>
-          <IconBack className={styles.headerBackIcon} />
+        <Link to="/" className={styles.headerBackLink}>
+          <Logo className={styles.headerBackIcon} />
         </Link>
         <div>
           <p className={styles.headerTitle}>{title}</p>
-          <p className={styles.headerAuthor}>{author}</p>
         </div>
       </div>
       <div className={styles.headerRightSection}>

@@ -16,7 +16,7 @@ export function App(props) {
         <ScrollToTop />
         <Switch>
           <Route path="/title/:titleId" component={PageTitle} />
-          <Route path="/book/:bookId" component={PageBook} />
+          <Route path="/book/:bookIds+" component={PageBook} />
           <Route path="/" component={PageHome} />
         </Switch>
       </QueryClientProvider>

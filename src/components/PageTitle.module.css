@@ -18,8 +18,12 @@
   }
 }
 
+.headerBackLink {
+  display: flex;
+}
+
 .headerBackIcon {
-  height: 36px;
+  height: 60px;
   fill: white;
 }
 
