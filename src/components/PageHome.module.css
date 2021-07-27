@@ -122,7 +122,8 @@
 
 .title {
   margin-top: 4px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -134,6 +135,47 @@
   .title {
     font-size: 12px;
   }
+}
+
+.subtitle {
+  color: #e84393;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+@media screen and (max-width: 576px) {
+  .subtitle {
+    font-size: 10px;
+  }
+}
+
+.description {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.langIcons {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+}
+
+.langIcon {
+  flex: 0 0 16px;
+  width: 16px;
+}
+
+.langIcon:not(:first-child) {
+  margin-left: 4px;
+}
+
+.date {
+  color: #9fadbd;
+  font-weight: 600;
+  font-size: 11px;
 }
 
 .filterModalOverlay {

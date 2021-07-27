@@ -1,7 +1,8 @@
-export function parseName(name) {
+export function parseTitleName(name) {
   let title = "";
   let author = "";
   let circle = "";
+  let date = "";
   if (name.startsWith("[")) {
     title = name.substring(name.indexOf("]") + 1).trim();
     const creator = name.substring(1, name.indexOf("]"));
@@ -16,8 +17,13 @@ export function parseName(name) {
     }
   } else {
     title = name;
-    author = "Multiple authors";
+    author = "Unknown author";
   }
 
-  return { title, author, circle };
+  if (title.endsWith("}")) {
+    date = title.substring(title.lastIndexOf("{") + 1, title.length - 1);
+    title = title.substring(0, title.lastIndexOf("{")).trim();
+  }
+
+  return { title, author, circle, date };
 }

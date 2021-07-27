@@ -4,18 +4,10 @@ import { useQuery } from "react-query";
 
 import { Logo } from "./Logo";
 import { Image } from "./Image";
-import {
-  KEY_TITLE_BY_ID,
-  KEY_BOOKS_IN_TITLE,
-  KEY_BOOK_PAGES_BY_ID,
-} from "../constants/query-key";
+import { KEY_TITLE_BY_ID, KEY_BOOKS_IN_TITLE } from "../constants/query-key";
 import { getTitleById, getTitleCoverURL } from "../services/title";
-import {
-  getBooksInTitle,
-  getBookPageURL,
-  getBookPagesById,
-} from "../services/book";
-import { parseName } from "../utils/string";
+import { getBooksInTitle } from "../services/book";
+import { parseTitleName } from "../utils/string";
 
 import styles from "./PageTitle.module.css";
 
@@ -36,35 +28,14 @@ export function PageTitle() {
     error: booksFetchError,
   } = useQuery([KEY_BOOKS_IN_TITLE, titleId], () => getBooksInTitle(titleId));
 
-  // Fetch the dimension of each book page if there's only 1 book in the title
-  const {
-    status: singleBookPagesFetchStatus,
-    data: singleBookPages,
-    error: singleBookPagesFetchError,
-  } = useQuery(
-    [KEY_BOOK_PAGES_BY_ID, books[0]],
-    () => getBookPagesById(books[0].id),
-    {
-      enabled: books.length === 1,
-    },
-  );
-
-  if (
-    titleFetchStatus === "loading" ||
-    booksFetchStatus === "loading" ||
-    (books.length === 1 && singleBookPagesFetchStatus === "loading")
-  ) {
+  if (titleFetchStatus === "loading" || booksFetchStatus === "loading") {
     return null;
-  } else if (
-    titleFetchStatus === "error" ||
-    booksFetchStatus === "error" ||
-    (books.length === 1 && singleBookPagesFetchStatus === "error")
-  ) {
+  } else if (titleFetchStatus === "error" || booksFetchStatus === "error") {
     return null;
   }
 
   const { name } = title;
-  const { title: titleName, author, circle } = parseName(name);
+  const { title: titleName, author, circle } = parseTitleName(name);
 
   return (
     <>
@@ -95,38 +66,8 @@ export function PageTitle() {
           <p className={styles.infoCircle}>{circle}</p>
         </div>
       </div>
-      {books.length === 1 ? (
-        <ThumbnailsPreview book={books[0]} bookPages={singleBookPages} />
-      ) : null}
-      {books.length > 1 ? <ChaptersList chapters={books} /> : null}
+      {books.length > 0 ? <ChaptersList chapters={books} /> : null}
     </>
-  );
-}
-
-function ThumbnailsPreview(props) {
-  const { book, bookPages } = props;
-
-  return (
-    <div className={styles.previewGrid}>
-      {[...Array(Math.min(8, book.page_count))].map((_, index) => (
-        <div className={styles.preview} key={index}>
-          <Link className={styles.previewWrapper} to={`/book/${book.id}`}>
-            <div
-              className={styles.previewPadding}
-              style={{
-                paddingTop: `${
-                  (bookPages[index].height * 100) / bookPages[index].width
-                }%`,
-              }}
-            />
-            <Image
-              className={styles.previewImage}
-              src={getBookPageURL(book.id, bookPages[index].index)}
-            />
-          </Link>
-        </div>
-      ))}
-    </div>
   );
 }
 

@@ -46,6 +46,9 @@ body {
   text-rendering: optimizeSpeed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 #root {
@@ -90,6 +93,7 @@ input:focus,
 select:focus,
 textarea:focus {
   outline-width: 0;
+  outline: none;
 }
 
 /* Remote anchor style */

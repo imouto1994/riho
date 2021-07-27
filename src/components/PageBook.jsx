@@ -24,7 +24,6 @@ import {
   getBookPagesById,
   getBooksInTitle,
 } from "../services/book";
-import { parseName } from "../utils/string";
 
 import styles from "./PageBook.module.css";
 
@@ -138,7 +137,7 @@ export function PageBook(props) {
     } else {
       const windowWidth = window.innerWidth;
       const clickX = e.clientX;
-      if (clickX < windowWidth / 4) {
+      if (clickX < windowWidth / 12) {
         const currentPageEl = document.getElementById(
           `${isAlt ? "alt-" : ""}page-${pageIndex}`,
         );
@@ -151,7 +150,7 @@ export function PageBook(props) {
           );
           prevPageEl.scrollIntoView();
         }
-      } else if (clickX < (3 * windowWidth) / 4) {
+      } else if (clickX < (11 * windowWidth) / 12) {
         setNavHidden(!navHidden);
       } else {
         const currentPageEl = document.getElementById(
@@ -242,8 +241,8 @@ export function PageBook(props) {
     );
   }
 
-  const { title } = parseName(book.name);
-  const { title: altTitle } = parseName(altBookId != null ? altBook.name : "");
+  const title = book.name;
+  const altTitle = altBookId != null ? altBook.name : "";
   const gridClassName = classnames(styles.pageGrid, {
     [styles.pageGridPreview]: showGrid,
   });

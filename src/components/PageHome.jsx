@@ -12,6 +12,9 @@ import { IconCheck } from "./IconCheck";
 import { IconAscending } from "./IconAscending";
 import { IconDescending } from "./IconDescending";
 import { IconFilter } from "./IconFilter";
+import { IconEn } from "./IconEn";
+import { IconJp } from "./IconJp";
+import { IconUncensored } from "./IconUncensored";
 import {
   KEY_LIBRARIES,
   KEY_TITLES,
@@ -20,6 +23,7 @@ import {
 import { useLockBodyScroll } from "../hooks/lock-body-scroll";
 import { getLibraries } from "../services/library";
 import { getTitles, countTitles, getTitleCoverURL } from "../services/title";
+import { parseTitleName } from "../utils/string";
 
 import styles from "./PageHome.module.css";
 
@@ -178,27 +182,56 @@ function TitlesGrid(props) {
 
   return (
     <ul className={styles.titlesGrid}>
-      {titles.map((title) => (
-        <li className={styles.titleEntry} key={title.id}>
-          <Link className={styles.linkContainer} to={`/title/${title.id}`}>
-            <div className={styles.thumbnailWrapper}>
-              <div
-                className={styles.thumbnailPadding}
-                style={{
-                  paddingTop: `${
-                    (title.cover_height * 100) / title.cover_width
-                  }%`,
-                }}
-              />
-              <Image
-                className={styles.thumbnail}
-                src={getTitleCoverURL(title.id)}
-              />
-            </div>
-            <p className={styles.title}>{title.name}</p>
-          </Link>
-        </li>
-      ))}
+      {titles.map((title) => {
+        const {
+          title: titleName,
+          author,
+          circle,
+          date,
+        } = parseTitleName(title.name);
+
+        return (
+          <li className={styles.titleEntry} key={title.id}>
+            <Link className={styles.linkContainer} to={`/title/${title.id}`}>
+              <div className={styles.thumbnailWrapper}>
+                <div
+                  className={styles.thumbnailPadding}
+                  style={{
+                    paddingTop: `${
+                      (title.cover_height * 100) / title.cover_width
+                    }%`,
+                  }}
+                />
+                <Image
+                  className={styles.thumbnail}
+                  src={getTitleCoverURL(title.id)}
+                />
+              </div>
+              <p className={styles.title}>{titleName}</p>
+              <p className={styles.subtitle}>{`${author}${
+                !!circle ? ` | ${circle}` : ""
+              }`}</p>
+              <div className={styles.description}>
+                <div className={styles.langIcons}>
+                  {title.langs.split(",").map((lang) => {
+                    if (lang === "EN") {
+                      return <IconEn className={styles.langIcon} key={lang} />;
+                    } else if (lang === "JP") {
+                      return <IconJp className={styles.langIcon} key={lang} />;
+                    } else {
+                      return null;
+                    }
+                  })}
+                  {!!title.uncensored ? (
+                    <IconUncensored className={styles.langIcon} />
+                  ) : null}
+                </div>
+                <p className={styles.date}>{date}</p>
+              </div>
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -261,10 +294,10 @@ function FilterModal(props) {
 
     return (
       <div className={styles.filterOption} onClick={() => onSortSelect(type)}>
-        {sortFilter === "created_at" ? (
-          <IconDescending className={iconClassName} />
-        ) : (
+        {sortFilter === "name" ? (
           <IconAscending className={iconClassName} />
+        ) : (
+          <IconDescending className={iconClassName} />
         )}
         <p className={styles.filterOptionTitle}>{text}</p>
       </div>
@@ -331,7 +364,8 @@ function FilterModal(props) {
         <div className={styles.filterSection}>
           <p className={styles.filterSectionTitle}>Sort</p>
           {renderSortOption("name", "Alphabetically")}
-          {renderSortOption("created_at", "Date added")}
+          {renderSortOption("created_at", "Date published")}
+          {renderSortOption("updated_at", "Date modified")}
         </div>
       </div>
     </>

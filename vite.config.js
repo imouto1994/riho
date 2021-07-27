@@ -15,7 +15,7 @@ export default defineConfig({
         start_url: "https://riho94.noobsaigon.com/",
         scope: "https://riho94.noobsaigon.com/",
         theme_color: "#000",
-        display: "fullscreen",
+        display: "standalone",
         icons: [
           {
             src: "/icon-192.png",
