@@ -17,7 +17,7 @@ export function parseTitleName(name) {
     }
   } else {
     title = name;
-    author = "Unknown author";
+    author = "Multiple authors";
   }
 
   if (title.endsWith("}")) {

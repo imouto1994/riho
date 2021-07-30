@@ -137,7 +137,7 @@ export function PageBook(props) {
     } else {
       const windowWidth = window.innerWidth;
       const clickX = e.clientX;
-      if (clickX < windowWidth / 12) {
+      if (clickX < windowWidth / 10) {
         const currentPageEl = document.getElementById(
           `${isAlt ? "alt-" : ""}page-${pageIndex}`,
         );
@@ -150,7 +150,7 @@ export function PageBook(props) {
           );
           prevPageEl.scrollIntoView();
         }
-      } else if (clickX < (11 * windowWidth) / 12) {
+      } else if (clickX < (9 * windowWidth) / 10) {
         setNavHidden(!navHidden);
       } else {
         const currentPageEl = document.getElementById(
@@ -194,14 +194,13 @@ export function PageBook(props) {
   function renderPage(index, isAlt) {
     const bookPage = isAlt ? altBookPages[index] : bookPages[index];
     const bookPageRatio = bookPage.width / bookPage.height;
-    const shouldSpanWidth =
-      showGrid || readingMode !== "height" || bookPageRatio > windowRatio;
+    const shouldSpanWidth = showGrid || readingMode !== "height";
 
     const pageClassName = classnames(styles.page, {
       [styles.pageHidden]: isAlt !== showAlt,
       [styles.pagePreview]: showGrid,
       [styles.pageSpanWidth]: shouldSpanWidth,
-      [styles.pageSpanHeight]: !shouldSpanWidth,
+      [styles.pageSpanHeight]: readingMode === "height",
       [styles.pageWebtoon]: !showGrid && readingMode === "webtoon",
     });
 
@@ -215,20 +214,21 @@ export function PageBook(props) {
         <div
           className={styles.pageWrapper}
           style={
-            !shouldSpanWidth
-              ? { width: `${(bookPage.width * 100) / bookPage.height}vh` }
+            readingMode === "height"
+              ? {
+                  width:
+                    bookPageRatio > windowRatio
+                      ? "100%"
+                      : `${(bookPage.width * 100) / bookPage.height}vh`,
+                }
               : undefined
           }
         >
           <div
             className={styles.pagePadding}
-            style={
-              shouldSpanWidth
-                ? {
-                    paddingTop: `${(bookPage.height * 100) / bookPage.width}%`,
-                  }
-                : undefined
-            }
+            style={{
+              paddingTop: `${(bookPage.height * 100) / bookPage.width}%`,
+            }}
           />
           <Image
             className={styles.pageImage}

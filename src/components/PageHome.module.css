@@ -172,6 +172,18 @@
   margin-left: 4px;
 }
 
+.iconUncensored {
+  flex: 0 0 20px;
+  width: 20px;
+  margin-left: 4px;
+}
+
+.iconWaifu {
+  flex: 0 0 16px;
+  width: 16px;
+  margin-left: 4px;
+}
+
 .date {
   color: #9fadbd;
   font-weight: 600;

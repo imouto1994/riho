@@ -15,6 +15,7 @@ import { IconFilter } from "./IconFilter";
 import { IconEn } from "./IconEn";
 import { IconJp } from "./IconJp";
 import { IconUncensored } from "./IconUncensored";
+import { IconWaifu } from "./IconWaifu";
 import {
   KEY_LIBRARIES,
   KEY_TITLES,
@@ -223,7 +224,10 @@ function TitlesGrid(props) {
                     }
                   })}
                   {!!title.uncensored ? (
-                    <IconUncensored className={styles.langIcon} />
+                    <IconUncensored className={styles.iconUncensored} />
+                  ) : null}
+                  {!!title.waifu2x ? (
+                    <IconWaifu className={styles.iconWaifu} />
                   ) : null}
                 </div>
                 <p className={styles.date}>{date}</p>

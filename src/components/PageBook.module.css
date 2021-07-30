@@ -115,6 +115,7 @@
 .pageSpanHeight {
   display: flex;
   justify-content: center;
+  align-items: center;
   height: 100vh;
 }
 
@@ -147,15 +148,10 @@
 
 .pageSpanHeight .pageWrapper {
   position: relative;
-  height: 100%;
 }
 
-.pageSpanWidth .pagePadding {
+.pagePadding {
   width: 100%;
-}
-
-.pageSpanHeight .pagePadding {
-  display: none;
 }
 
 .pageImage {
