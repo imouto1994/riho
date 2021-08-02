@@ -200,7 +200,7 @@ export function PageBook(props) {
       [styles.pageHidden]: isAlt !== showAlt,
       [styles.pagePreview]: showGrid,
       [styles.pageSpanWidth]: shouldSpanWidth,
-      [styles.pageSpanHeight]: readingMode === "height",
+      [styles.pageSpanHeight]: !shouldSpanWidth,
       [styles.pageWebtoon]: !showGrid && readingMode === "webtoon",
     });
 
@@ -214,7 +214,7 @@ export function PageBook(props) {
         <div
           className={styles.pageWrapper}
           style={
-            readingMode === "height"
+            !shouldSpanWidth
               ? {
                   width:
                     bookPageRatio > windowRatio
