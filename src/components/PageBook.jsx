@@ -37,11 +37,11 @@ export function PageBook(props) {
   const [showGrid, setShowGrid] = useState(false);
   const [selectedPageIndex, setSelectedPageIndex] = useState(-1);
   const [navHidden, setNavHidden] = useState(true);
-  const [pageLimit, setPageLimit] = useState(PAGE_LOAD_BATCH_COUNT);
+  const [pageLimit, setPageLimit] = useState(1);
   const [pageLoadCount, setPageLoadCount] = useState(0);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showAlt, setShowAlt] = useState(false);
-  const [altPageLimit, setAltPageLimit] = useState(PAGE_LOAD_BATCH_COUNT);
+  const [altPageLimit, setAltPageLimit] = useState(1);
   const [altPageLoadCount, setAltPageLoadCount] = useState(0);
   const [readingMode, setReadingMode] = useLocalStorage(
     "reading_mode",
