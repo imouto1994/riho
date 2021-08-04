@@ -37,11 +37,13 @@ export function PageBook(props) {
   const [showGrid, setShowGrid] = useState(false);
   const [selectedPageIndex, setSelectedPageIndex] = useState(-1);
   const [navHidden, setNavHidden] = useState(true);
-  const [pageLimit, setPageLimit] = useState(1);
+  const [pageLimit, setPageLimit] = useState(0);
+  const [pageURLs, setPageURLs] = useState([]);
   const [pageLoadCount, setPageLoadCount] = useState(0);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showAlt, setShowAlt] = useState(false);
-  const [altPageLimit, setAltPageLimit] = useState(1);
+  const [altPageLimit, setAltPageLimit] = useState(0);
+  const [altPageURLs, setAltPageURLs] = useState([]);
   const [altPageLoadCount, setAltPageLoadCount] = useState(0);
   const [readingMode, setReadingMode] = useLocalStorage(
     "reading_mode",
@@ -89,16 +91,84 @@ export function PageBook(props) {
   );
 
   useEffect(() => {
-    if (pageLoadCount === pageLimit) {
-      setPageLimit((prevLimit) => prevLimit + PAGE_LOAD_BATCH_COUNT);
+    if (bookPages != null) {
+      setPageLimit(1);
+      setPageURLs([...Array(bookPages.length)].map(() => null));
     }
-  }, [pageLoadCount]);
+
+    return () => {
+      for (const pageURL of pageURLs) {
+        URL.revokeObjectURL(pageURL);
+      }
+    };
+  }, [bookPages]);
+
+  useEffect(async () => {
+    async function fetchPage(index) {
+      const bookPage = bookPages[index];
+      const bookPageURL = getBookPageURL(bookId, bookPage.index);
+      const response = await fetch(bookPageURL);
+      const blob = await response.blob();
+      const blobURL = URL.createObjectURL(blob);
+      setPageURLs((urls) =>
+        urls.map((url, i) => (i === index ? blobURL : url)),
+      );
+    }
+
+    const promises = [];
+    for (let i = pageLoadCount; i < pageLimit; i++) {
+      promises.push(fetchPage(i));
+    }
+    await Promise.all(promises);
+
+    if (pageLoadCount !== pageLimit) {
+      setPageLoadCount(pageLimit);
+      if (pageLimit < bookPages.length) {
+        setPageLimit(
+          Math.min(pageLimit + PAGE_LOAD_BATCH_COUNT, bookPages.length),
+        );
+      }
+    }
+  }, [pageLimit]);
 
   useEffect(() => {
-    if (altPageLoadCount === altPageLimit) {
-      setAltPageLimit((prevLimit) => prevLimit + PAGE_LOAD_BATCH_COUNT);
+    if (altBookPages != null) {
+      setAltPageLimit(1);
+      setAltPageURLs([...Array(altBookPages.length)].map(() => null));
     }
-  }, [altPageLoadCount]);
+
+    return () => {
+      for (const altPageURL of altPageURLs) {
+        URL.revokeObjectURL(altPageURL);
+      }
+    };
+  }, [altBookPages]);
+
+  useEffect(async () => {
+    async function fetchAltPage(index) {
+      const altBookPage = altBookPages[index];
+      const altBookPageURL = getBookPageURL(altBookId, altBookPage.index);
+      const response = await fetch(altBookPageURL);
+      const blob = await response.blob();
+      const blobURL = URL.createObjectURL(blob);
+      setAltPageURLs((urls) =>
+        urls.map((url, i) => (i === index ? blobURL : url)),
+      );
+    }
+
+    for (let i = altPageLoadCount; i < altPageLimit; i++) {
+      await fetchAltPage(i);
+    }
+
+    if (altPageLoadCount !== altPageLimit) {
+      setAltPageLoadCount(altPageLimit);
+      if (altPageLimit < altBookPages.length) {
+        setAltPageLimit(
+          Math.min(altPageLimit + PAGE_LOAD_BATCH_COUNT, altBookPages.length),
+        );
+      }
+    }
+  }, [pageLimit]);
 
   useEffect(() => {
     if (selectedPageIndex >= 0) {
@@ -169,14 +239,6 @@ export function PageBook(props) {
     }
   }
 
-  function onPageLoad() {
-    setPageLoadCount((prevCount) => prevCount + 1);
-  }
-
-  function onAltPageLoad() {
-    setAltPageLoadCount((prevCount) => prevCount + 1);
-  }
-
   function onGridButtonClick() {
     setShowGrid(true);
     window.scrollTo(0, 0);
@@ -203,6 +265,7 @@ export function PageBook(props) {
       [styles.pageSpanHeight]: !shouldSpanWidth,
       [styles.pageWebtoon]: !showGrid && readingMode === "webtoon",
     });
+    const imageURL = isAlt ? altPageURLs[index] : pageURLs[index];
 
     return (
       <div
@@ -230,12 +293,9 @@ export function PageBook(props) {
               paddingTop: `${(bookPage.height * 100) / bookPage.width}%`,
             }}
           />
-          <Image
-            className={styles.pageImage}
-            src={getBookPageURL(isAlt ? altBookId : bookId, bookPage.index)}
-            onImageLoad={isAlt ? onAltPageLoad : onPageLoad}
-            shouldLoad={index < pageLimit}
-          />
+          {imageURL != null ? (
+            <Image className={styles.pageImage} src={imageURL} />
+          ) : null}
         </div>
       </div>
     );
