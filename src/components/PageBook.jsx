@@ -109,11 +109,16 @@ export function PageBook(props) {
       const bookPageURL = getBookPageURL(bookId, bookPage.index);
       let blob;
       for (let i = 0; i < 5; i++) {
-        const response = await fetch(bookPageURL);
-        if (response.status === 200) {
-          blob = await response.blob();
-          break;
-        } else {
+        try {
+          const response = await fetch(bookPageURL);
+          if (response.status === 200) {
+            blob = await response.blob();
+            break;
+          } else {
+            await delay(1000);
+          }
+        } catch (err) {
+          console.log(err);
           await delay(1000);
         }
       }
@@ -129,11 +134,16 @@ export function PageBook(props) {
       const response = await fetch(altBookPageURL);
       let blob;
       for (let i = 0; i < 5; i++) {
-        const response = await fetch(altBookPageURL);
-        if (response.status === 200) {
-          blob = await response.blob();
-          break;
-        } else {
+        try {
+          const response = await fetch(altBookPageURL);
+          if (response.status === 200) {
+            blob = await response.blob();
+            break;
+          } else {
+            await delay(1000);
+          }
+        } catch (err) {
+          console.log(err);
           await delay(1000);
         }
       }
