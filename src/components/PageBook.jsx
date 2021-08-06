@@ -168,7 +168,7 @@ export function PageBook(props) {
         );
       }
     }
-  }, [pageLimit]);
+  }, [altPageLimit]);
 
   useEffect(() => {
     if (selectedPageIndex >= 0) {
