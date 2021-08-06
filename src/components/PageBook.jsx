@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams, useHistory } from "react-router-dom";
 import { useQuery } from "react-query";
 import classnames from "classnames";
@@ -28,7 +28,11 @@ import {
 
 import styles from "./PageBook.module.css";
 
-const PAGE_LOAD_BATCH_COUNT = 5;
+const PAGE_LOAD_BATCH_COUNT = 3;
+
+function delay(duration) {
+  return new Promise((resolve) => setTimeout(resolve, duration));
+}
 
 export function PageBook(props) {
   const { bookIds: bookIdsParam } = useParams();
@@ -40,12 +44,12 @@ export function PageBook(props) {
   const [navHidden, setNavHidden] = useState(true);
   const [pageLimit, setPageLimit] = useState(0);
   const [pageURLs, setPageURLs] = useState([]);
-  const [pageLoadCount, setPageLoadCount] = useState(0);
+  const pageLoadCount = useRef(0);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showAlt, setShowAlt] = useState(false);
-  const [altPageLimit, setAltPageLimit] = useState(0);
+  // const [altPageLimit, setAltPageLimit] = useState(0);
   const [altPageURLs, setAltPageURLs] = useState([]);
-  const [altPageLoadCount, setAltPageLoadCount] = useState(0);
+  // const [altPageLoadCount, setAltPageLoadCount] = useState(0);
   const [readingMode, setReadingMode] = useLocalStorage(
     "reading_mode",
     "width",
@@ -92,32 +96,62 @@ export function PageBook(props) {
   );
 
   useEffect(() => {
-    if (bookPages != null) {
+    if (bookPages != null && altBookPages != null) {
       setPageLimit(1);
       setPageURLs([...Array(bookPages.length)].map(() => null));
+      setAltPageURLs([...Array(bookPages.length)].map(() => null));
     }
-  }, [bookPages]);
+  }, [bookPages, altBookPages]);
 
   useEffect(async () => {
     async function fetchPage(index) {
       const bookPage = bookPages[index];
       const bookPageURL = getBookPageURL(bookId, bookPage.index);
-      const response = await fetch(bookPageURL);
-      const blob = await response.blob();
+      let blob;
+      for (let i = 0; i < 5; i++) {
+        const response = await fetch(bookPageURL);
+        if (response.status === 200) {
+          blob = await response.blob();
+          break;
+        } else {
+          await delay(1000);
+        }
+      }
       const blobURL = URL.createObjectURL(blob);
       setPageURLs((urls) =>
         urls.map((url, i) => (i === index ? blobURL : url)),
       );
     }
 
+    async function fetchAltPage(index) {
+      const altBookPage = altBookPages[index];
+      const altBookPageURL = getBookPageURL(altBookId, altBookPage.index);
+      const response = await fetch(altBookPageURL);
+      let blob;
+      for (let i = 0; i < 5; i++) {
+        const response = await fetch(altBookPageURL);
+        if (response.status === 200) {
+          blob = await response.blob();
+          break;
+        } else {
+          await delay(1000);
+        }
+      }
+      const blobURL = URL.createObjectURL(blob);
+      setAltPageURLs((urls) =>
+        urls.map((url, i) => (i === index ? blobURL : url)),
+      );
+    }
+
     const promises = [];
-    for (let i = pageLoadCount; i < pageLimit; i++) {
+    for (let i = pageLoadCount.current; i < pageLimit; i++) {
       promises.push(fetchPage(i));
+      promises.push(fetchAltPage(i));
     }
     await Promise.all(promises);
 
-    if (pageLoadCount !== pageLimit) {
-      setPageLoadCount(pageLimit);
+    if (pageLoadCount.current !== pageLimit) {
+      pageLoadCount.current = pageLimit;
       if (pageLimit < bookPages.length) {
         setPageLimit(
           Math.min(pageLimit + PAGE_LOAD_BATCH_COUNT, bookPages.length),
@@ -126,38 +160,38 @@ export function PageBook(props) {
     }
   }, [pageLimit]);
 
-  useEffect(() => {
-    if (altBookPages != null) {
-      setAltPageLimit(1);
-      setAltPageURLs([...Array(altBookPages.length)].map(() => null));
-    }
-  }, [altBookPages]);
+  // useEffect(() => {
+  //   if (altBookPages != null) {
+  //     setAltPageLimit(1);
+  //     setAltPageURLs([...Array(altBookPages.length)].map(() => null));
+  //   }
+  // }, [altBookPages]);
 
-  useEffect(async () => {
-    async function fetchAltPage(index) {
-      const altBookPage = altBookPages[index];
-      const altBookPageURL = getBookPageURL(altBookId, altBookPage.index);
-      const response = await fetch(altBookPageURL);
-      const blob = await response.blob();
-      const blobURL = URL.createObjectURL(blob);
-      setAltPageURLs((urls) =>
-        urls.map((url, i) => (i === index ? blobURL : url)),
-      );
-    }
+  // useEffect(async () => {
+  //   async function fetchAltPage(index) {
+  //     const altBookPage = altBookPages[index];
+  //     const altBookPageURL = getBookPageURL(altBookId, altBookPage.index);
+  //     const response = await fetch(altBookPageURL);
+  //     const blob = await response.blob();
+  //     const blobURL = URL.createObjectURL(blob);
+  //     setAltPageURLs((urls) =>
+  //       urls.map((url, i) => (i === index ? blobURL : url)),
+  //     );
+  //   }
 
-    for (let i = altPageLoadCount; i < altPageLimit; i++) {
-      await fetchAltPage(i);
-    }
+  //   for (let i = altPageLoadCount; i < altPageLimit; i++) {
+  //     await fetchAltPage(i);
+  //   }
 
-    if (altPageLoadCount !== altPageLimit) {
-      setAltPageLoadCount(altPageLimit);
-      if (altPageLimit < altBookPages.length) {
-        setAltPageLimit(
-          Math.min(altPageLimit + PAGE_LOAD_BATCH_COUNT, altBookPages.length),
-        );
-      }
-    }
-  }, [altPageLimit]);
+  //   if (altPageLoadCount !== altPageLimit) {
+  //     setAltPageLoadCount(altPageLimit);
+  //     if (altPageLimit < altBookPages.length) {
+  //       setAltPageLimit(
+  //         Math.min(altPageLimit + PAGE_LOAD_BATCH_COUNT, altBookPages.length),
+  //       );
+  //     }
+  //   }
+  // }, [altPageLimit]);
 
   useEffect(() => {
     if (selectedPageIndex >= 0) {
