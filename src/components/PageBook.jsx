@@ -96,12 +96,6 @@ export function PageBook(props) {
       setPageLimit(1);
       setPageURLs([...Array(bookPages.length)].map(() => null));
     }
-
-    return () => {
-      for (const pageURL of pageURLs) {
-        URL.revokeObjectURL(pageURL);
-      }
-    };
   }, [bookPages]);
 
   useEffect(async () => {
@@ -137,12 +131,6 @@ export function PageBook(props) {
       setAltPageLimit(1);
       setAltPageURLs([...Array(altBookPages.length)].map(() => null));
     }
-
-    return () => {
-      for (const altPageURL of altPageURLs) {
-        URL.revokeObjectURL(altPageURL);
-      }
-    };
   }, [altBookPages]);
 
   useEffect(async () => {
