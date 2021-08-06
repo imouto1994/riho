@@ -113,12 +113,13 @@ export function PageBook(props) {
           const response = await fetch(bookPageURL);
           if (response.status === 200) {
             blob = await response.blob();
+            console.log("GOT BLOB", index);
             break;
           } else {
             await delay(1000);
           }
         } catch (err) {
-          console.log(err);
+          console.log("ERR", err);
           await delay(1000);
         }
       }
@@ -137,6 +138,7 @@ export function PageBook(props) {
           const response = await fetch(altBookPageURL);
           if (response.status === 200) {
             blob = await response.blob();
+            console.log("GOT ALT BLOB", index);
             break;
           } else {
             await delay(1000);
@@ -162,6 +164,7 @@ export function PageBook(props) {
     } catch (err) {
       console.log("ERR 2", err);
     }
+    console.log("LETS GO", pageLoadCount.current, pageLimit);
 
     if (pageLoadCount.current !== pageLimit) {
       pageLoadCount.current = pageLimit;
