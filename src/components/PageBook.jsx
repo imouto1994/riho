@@ -131,7 +131,6 @@ export function PageBook(props) {
     async function fetchAltPage(index) {
       const altBookPage = altBookPages[index];
       const altBookPageURL = getBookPageURL(altBookId, altBookPage.index);
-      const response = await fetch(altBookPageURL);
       let blob;
       for (let i = 0; i < 5; i++) {
         try {
