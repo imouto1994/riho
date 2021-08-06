@@ -154,12 +154,14 @@ export function PageBook(props) {
       );
     }
 
-    async function fetch() {
+    async function fetchImages() {
       const promises = [];
       console.log("NEW PROMISES", pageLoadCount.current, pageLimit);
       for (let i = pageLoadCount.current; i < pageLimit; i++) {
         promises.push(fetchPage(i));
-        promises.push(fetchAltPage(i));
+        if (altBookId != null) {
+          promises.push(fetchAltPage(i));
+        }
       }
       try {
         await Promise.all(promises);
@@ -179,7 +181,7 @@ export function PageBook(props) {
         }
       }
     }
-    fetch();
+    fetchImages();
   }, [pageLimit]);
 
   // useEffect(() => {
