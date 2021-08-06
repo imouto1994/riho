@@ -102,8 +102,8 @@ export function PageBook(props) {
       setAltPageURLs([...Array(bookPages.length)].map(() => null));
     }
   }, [bookPages, altBookPages]);
-
-  useEffect(async () => {
+  console.log("LIMIT", pageLimit);
+  useEffect(() => {
     async function fetchPage(index) {
       const bookPage = bookPages[index];
       const bookPageURL = getBookPageURL(bookId, bookPage.index);
@@ -154,29 +154,32 @@ export function PageBook(props) {
       );
     }
 
-    const promises = [];
-    console.log("NEW PROMISES", pageLoadCount.current, pageLimit);
-    for (let i = pageLoadCount.current; i < pageLimit; i++) {
-      promises.push(fetchPage(i));
-      promises.push(fetchAltPage(i));
-    }
-    try {
-      await Promise.all(promises);
-    } catch (err) {
-      console.log("ERR 2", err);
-    }
-    console.log("LETS GO", pageLoadCount.current, pageLimit);
+    async function fetch() {
+      const promises = [];
+      console.log("NEW PROMISES", pageLoadCount.current, pageLimit);
+      for (let i = pageLoadCount.current; i < pageLimit; i++) {
+        promises.push(fetchPage(i));
+        promises.push(fetchAltPage(i));
+      }
+      try {
+        await Promise.all(promises);
+      } catch (err) {
+        console.log("ERR 2", err);
+      }
+      console.log("LETS GO", pageLoadCount.current, pageLimit);
 
-    if (pageLoadCount.current !== pageLimit) {
-      pageLoadCount.current = pageLimit;
-      console.log("FAK", pageLimit, bookPages.length);
-      if (pageLimit < bookPages.length) {
-        console.log("WTF");
-        setPageLimit(
-          Math.min(pageLimit + PAGE_LOAD_BATCH_COUNT, bookPages.length),
-        );
+      if (pageLoadCount.current !== pageLimit) {
+        pageLoadCount.current = pageLimit;
+        console.log("FAK", pageLimit, bookPages.length);
+        if (pageLimit < bookPages.length) {
+          console.log("WTF");
+          setPageLimit(
+            Math.min(pageLimit + PAGE_LOAD_BATCH_COUNT, bookPages.length),
+          );
+        }
       }
     }
+    fetch();
   }, [pageLimit]);
 
   // useEffect(() => {
