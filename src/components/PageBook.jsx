@@ -142,7 +142,7 @@ export function PageBook(props) {
             await delay(1000);
           }
         } catch (err) {
-          console.log(err);
+          console.log("ERR", err);
           await delay(1000);
         }
       }
@@ -157,7 +157,11 @@ export function PageBook(props) {
       promises.push(fetchPage(i));
       promises.push(fetchAltPage(i));
     }
-    await Promise.all(promises);
+    try {
+      await Promise.all(promises);
+    } catch (err) {
+      console.log("ERR 2", err);
+    }
 
     if (pageLoadCount.current !== pageLimit) {
       pageLoadCount.current = pageLimit;
