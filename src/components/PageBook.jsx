@@ -155,6 +155,7 @@ export function PageBook(props) {
     }
 
     const promises = [];
+    console.log("NEW PROMISES", pageLoadCount.current, pageLimit);
     for (let i = pageLoadCount.current; i < pageLimit; i++) {
       promises.push(fetchPage(i));
       promises.push(fetchAltPage(i));
@@ -168,7 +169,9 @@ export function PageBook(props) {
 
     if (pageLoadCount.current !== pageLimit) {
       pageLoadCount.current = pageLimit;
+      console.log("FAK", pageLimit, bookPages.length);
       if (pageLimit < bookPages.length) {
+        console.log("WTF");
         setPageLimit(
           Math.min(pageLimit + PAGE_LOAD_BATCH_COUNT, bookPages.length),
         );
