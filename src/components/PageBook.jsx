@@ -27,7 +27,7 @@ import {
 
 import styles from "./PageBook.module.css";
 
-const PAGE_LOAD_BATCH_COUNT = 5;
+const PAGE_LOAD_BATCH_COUNT = 3;
 
 export function PageBook(props) {
   const { bookIds: bookIdsParam } = useParams();
@@ -48,7 +48,7 @@ export function PageBook(props) {
     "width",
   );
   const { width: windowWidth, height: windowHeight } = useWindowSize();
-  const windowRatio = windowWidth / windowHeight;
+  const windowRatio = windowHeight / windowWidth;
 
   const {
     status: bookFetchStatus,
@@ -140,31 +140,23 @@ export function PageBook(props) {
       const windowWidth = window.innerWidth;
       const clickX = e.clientX;
       if (clickX < windowWidth / 10) {
-        const currentPageEl = document.getElementById(
-          `${isAlt ? "alt-" : ""}page-${pageIndex}`,
-        );
+        const currentPageEl = document.getElementById(`page-${pageIndex}`);
         const currentPageTop = currentPageEl.getBoundingClientRect().top;
         if (currentPageTop < -5) {
           currentPageEl.scrollIntoView();
         } else if (pageIndex > 0) {
-          const prevPageEl = document.getElementById(
-            `${isAlt ? "alt-" : ""}page-${pageIndex - 1}`,
-          );
+          const prevPageEl = document.getElementById(`page-${pageIndex - 1}`);
           prevPageEl.scrollIntoView();
         }
       } else if (clickX < (9 * windowWidth) / 10) {
         setNavHidden(!navHidden);
       } else {
-        const currentPageEl = document.getElementById(
-          `${isAlt ? "alt-" : ""}page-${pageIndex}`,
-        );
+        const currentPageEl = document.getElementById(`page-${pageIndex}`);
         const currentPageTop = currentPageEl.getBoundingClientRect().top;
         if (currentPageTop > 5) {
           currentPageEl.scrollIntoView();
         } else if (pageIndex < bookPages.length - 1) {
-          const nextPageEl = document.getElementById(
-            `${isAlt ? "alt-" : ""}page-${pageIndex + 1}`,
-          );
+          const nextPageEl = document.getElementById(`page-${pageIndex + 1}`);
           nextPageEl.scrollIntoView();
         }
       }
@@ -193,51 +185,78 @@ export function PageBook(props) {
     setReadingMode(newReadingMode);
   }
 
-  function renderPage(index, isAlt) {
-    const bookPage = isAlt ? altBookPages[index] : bookPages[index];
-    const bookPageRatio = bookPage.width / bookPage.height;
+  function renderPage(index) {
+    const bookPage = bookPages[index];
+    const altBookPage = altBookId != null ? altBookPages[index] : null;
+    const bookPageRatio = bookPage.height / bookPage.width;
+    const altBookPageRatio =
+      altBookId != null ? altBookPage.height / altBookPage.width : null;
+    const maxRatio =
+      altBookId == null
+        ? bookPageRatio
+        : Math.max(altBookPageRatio, bookPageRatio);
+    const ratio = showAlt ? altBookPageRatio : bookPageRatio;
     const shouldSpanWidth = showGrid || readingMode !== "height";
 
     const pageClassName = classnames(styles.page, {
-      [styles.pageHidden]: isAlt !== showAlt,
       [styles.pagePreview]: showGrid,
       [styles.pageSpanWidth]: shouldSpanWidth,
       [styles.pageSpanHeight]: !shouldSpanWidth,
       [styles.pageWebtoon]: !showGrid && readingMode === "webtoon",
+    });
+    const imageClassName = classnames(styles.pageImage, {
+      [styles.pageImageHidden]: showAlt,
+    });
+    const altImageClassName = classnames(styles.pageImage, {
+      [styles.pageImageHidden]: !showAlt,
     });
 
     return (
       <div
         className={pageClassName}
         key={index}
-        onClick={(e) => onPageClick(e, index, isAlt)}
-        id={`${isAlt ? "alt-" : ""}page-${index}`}
+        onClick={(e) => onPageClick(e, index)}
+        id={`page-${index}`}
       >
         <div
           className={styles.pageWrapper}
           style={
             !shouldSpanWidth
               ? {
-                  width:
-                    bookPageRatio > windowRatio
-                      ? "100%"
-                      : `${(bookPage.width * 100) / bookPage.height}vh`,
+                  width: ratio < windowRatio ? "100%" : `${100 / ratio}vh`,
                 }
               : undefined
           }
         >
-          <div
-            className={styles.pagePadding}
-            style={{
-              paddingTop: `${(bookPage.height * 100) / bookPage.width}%`,
-            }}
-          />
+          {shouldSpanWidth ? (
+            <div
+              className={styles.pagePadding}
+              style={{
+                paddingTop: `${maxRatio * 100}%`,
+              }}
+            />
+          ) : null}
           <Image
-            className={styles.pageImage}
-            src={getBookPageURL(isAlt ? altBookId : bookId, bookPage.index)}
-            onImageLoad={isAlt ? onAltPageLoad : onPageLoad}
+            className={imageClassName}
+            src={getBookPageURL(bookId, bookPage.index)}
+            onImageLoad={onPageLoad}
             shouldLoad={index < pageLimit}
           />
+          {altBookId != null ? (
+            <Image
+              className={altImageClassName}
+              src={getBookPageURL(altBookId, altBookPage.index)}
+              onImageLoad={onAltPageLoad}
+              shouldLoad={index < altPageLimit}
+            />
+          ) : null}
+          {!navHidden ? (
+            <div className={styles.pageInfo}>
+              {showAlt
+                ? `${altBookPage.width} x ${altBookPage.height}`
+                : `${bookPage.width} x ${bookPage.height}`}
+            </div>
+          ) : null}
         </div>
       </div>
     );
@@ -271,14 +290,7 @@ export function PageBook(props) {
         onSettingsButtonClick={onSettingsButtonClick}
       />
       <div className={gridClassName} {...(altBookId != null ? handlers : {})}>
-        {[...Array(bookPages.length)].map((_, index) =>
-          renderPage(index, false),
-        )}
-        {altBookId != null
-          ? [...Array(altBookPages.length)].map((_, index) =>
-              renderPage(index, true),
-            )
-          : null}
+        {[...Array(bookPages.length)].map((_, index) => renderPage(index))}
       </div>
       {showSettingsModal && (
         <SettingsModal

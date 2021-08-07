@@ -229,6 +229,9 @@ function TitlesGrid(props) {
                   {!!title.waifu2x ? (
                     <IconWaifu className={styles.iconWaifu} />
                   ) : null}
+                  {!!title.webp ? (
+                    <span className={styles.iconWebp}>WEBP</span>
+                  ) : null}
                 </div>
                 <p className={styles.date}>{date}</p>
               </div>

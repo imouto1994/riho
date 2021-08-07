@@ -178,6 +178,13 @@
   margin-left: 4px;
 }
 
+.iconWebp {
+  font-size: 10px;
+  font-weight: 800;
+  color: #f6b93b;
+  margin-left: 4px;
+}
+
 .iconWaifu {
   flex: 0 0 16px;
   width: 16px;
