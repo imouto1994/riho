@@ -84,8 +84,10 @@ export function PageBook(props) {
     status: altBookPagesFetchStatus,
     data: altBookPages,
     error: altBookPagesFetchError,
-  } = useQuery([KEY_BOOK_PAGES_BY_ID, altBookId], () =>
-    getBookPagesById(altBookId),
+  } = useQuery(
+    [KEY_BOOK_PAGES_BY_ID, altBookId],
+    () => getBookPagesById(altBookId),
+    { enabled: altBookId != null },
   );
 
   useEffect(() => {
