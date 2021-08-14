@@ -18,15 +18,23 @@ export function Image(props) {
     }
   }
 
-  useEffect(() => {
-    if (isMounted) {
-      setIsLoaded(false);
+  function onError() {
+    if (!isLoaded) {
+      if (onImageLoad != null) {
+        onImageLoad();
+      }
     }
-  }, [src]);
+  }
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    if (imageRef.current != null) {
+      if (imageRef.current.complete) {
+        onLoad();
+      } else if (isLoaded) {
+        setIsLoaded(false);
+      }
+    }
+  }, [src]);
 
   const imageClassName = classnames(className, {
     [styles.imageHidden]: !isLoaded,
@@ -37,6 +45,12 @@ export function Image(props) {
   }
 
   return (
-    <img src={src} className={imageClassName} onLoad={onLoad} ref={imageRef} />
+    <img
+      src={src}
+      className={imageClassName}
+      onLoad={onLoad}
+      onError={onError}
+      ref={imageRef}
+    />
   );
 }
