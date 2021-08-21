@@ -3,6 +3,7 @@ import { Link, useParams, useHistory } from "react-router-dom";
 import { useQuery } from "react-query";
 import classnames from "classnames";
 import { useSwipeable } from "react-swipeable";
+import { useInView } from "react-intersection-observer";
 
 import { Button } from "./Button";
 import { Image } from "./Image";
@@ -35,20 +36,17 @@ export function PageBook(props) {
   const bookId = bookIds[0];
   const altBookId = bookIds[1];
   const [showGrid, setShowGrid] = useState(false);
-  const [selectedPageIndex, setSelectedPageIndex] = useState(-1);
+  const [selectedPageIndex, setSelectedPageIndex] = useState(0);
+  const [selectedPageLoaded, setSelectedPageLoaded] = useState(false);
+  const [selectedAltPageLoaded, setSelectedAltPageLoaded] = useState(false);
   const [navHidden, setNavHidden] = useState(true);
-  const [pageLimit, setPageLimit] = useState(1);
-  const [pageLoadCount, setPageLoadCount] = useState(0);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showAlt, setShowAlt] = useState(false);
-  const [altPageLimit, setAltPageLimit] = useState(1);
-  const [altPageLoadCount, setAltPageLoadCount] = useState(0);
   const [readingMode, setReadingMode] = useLocalStorage(
     "reading_mode",
     "width",
   );
   const { width: windowWidth, height: windowHeight } = useWindowSize();
-  const windowRatio = windowHeight / windowWidth;
 
   const {
     status: bookFetchStatus,
@@ -90,25 +88,13 @@ export function PageBook(props) {
     { enabled: altBookId != null },
   );
 
-  useEffect(() => {
-    if (pageLoadCount === pageLimit) {
-      setPageLimit((prevLimit) => prevLimit + PAGE_LOAD_BATCH_COUNT);
-    }
-  }, [pageLoadCount]);
-
-  useEffect(() => {
-    if (altPageLoadCount === altPageLimit) {
-      setAltPageLimit((prevLimit) => prevLimit + PAGE_LOAD_BATCH_COUNT);
-    }
-  }, [altPageLoadCount]);
-
-  useEffect(() => {
-    if (selectedPageIndex >= 0) {
-      document
-        .getElementById(`${showAlt ? "alt-" : ""}page-${selectedPageIndex}`)
-        .scrollIntoView();
-    }
-  }, [selectedPageIndex]);
+  // useEffect(() => {
+  //   if (selectedPageIndex >= 0) {
+  //     document
+  //       .getElementById(`${showAlt ? "alt-" : ""}page-${selectedPageIndex}`)
+  //       .scrollIntoView();
+  //   }
+  // }, [selectedPageIndex]);
 
   const handlers = useSwipeable({
     onSwipedRight: (eventData) => {
@@ -163,12 +149,16 @@ export function PageBook(props) {
     }
   }
 
-  function onPageLoad() {
-    setPageLoadCount((prevCount) => prevCount + 1);
+  function onPageLoad(index) {
+    if (index === selectedPageIndex) {
+      setSelectedPageLoaded(true);
+    }
   }
 
-  function onAltPageLoad() {
-    setAltPageLoadCount((prevCount) => prevCount + 1);
+  function onAltPageLoad(index) {
+    if (index === selectedPageIndex) {
+      setSelectedAltPageLoaded(true);
+    }
   }
 
   function onGridButtonClick() {
@@ -183,83 +173,6 @@ export function PageBook(props) {
 
   function onSettingsReadingModeChange(newReadingMode) {
     setReadingMode(newReadingMode);
-  }
-
-  function renderPage(index) {
-    const bookPage = bookPages[index];
-    const altBookPage = altBookId != null ? altBookPages[index] : null;
-    const bookPageRatio = bookPage.height / bookPage.width;
-    const altBookPageRatio =
-      altBookId != null ? altBookPage.height / altBookPage.width : null;
-    const maxRatio =
-      altBookId == null
-        ? bookPageRatio
-        : Math.max(altBookPageRatio, bookPageRatio);
-    const ratio = showAlt ? altBookPageRatio : bookPageRatio;
-    const shouldSpanWidth = showGrid || readingMode !== "height";
-
-    const pageClassName = classnames(styles.page, {
-      [styles.pagePreview]: showGrid,
-      [styles.pageSpanWidth]: shouldSpanWidth,
-      [styles.pageSpanHeight]: !shouldSpanWidth,
-      [styles.pageWebtoon]: !showGrid && readingMode === "webtoon",
-    });
-    const imageClassName = classnames(styles.pageImage, {
-      [styles.pageImageHidden]: showAlt,
-    });
-    const altImageClassName = classnames(styles.pageImage, {
-      [styles.pageImageHidden]: !showAlt,
-    });
-
-    return (
-      <div
-        className={pageClassName}
-        key={index}
-        onClick={(e) => onPageClick(e, index)}
-        id={`page-${index}`}
-      >
-        <div
-          className={styles.pageWrapper}
-          style={
-            !shouldSpanWidth
-              ? {
-                  width: ratio < windowRatio ? "100%" : `${100 / ratio}vh`,
-                }
-              : undefined
-          }
-        >
-          {shouldSpanWidth ? (
-            <div
-              className={styles.pagePadding}
-              style={{
-                paddingTop: `${maxRatio * 100}%`,
-              }}
-            />
-          ) : null}
-          <Image
-            className={imageClassName}
-            src={getBookPageURL(bookId, bookPage.index)}
-            onImageLoad={onPageLoad}
-            shouldLoad={index < pageLimit}
-          />
-          {altBookId != null ? (
-            <Image
-              className={altImageClassName}
-              src={getBookPageURL(altBookId, altBookPage.index)}
-              onImageLoad={onAltPageLoad}
-              shouldLoad={index < altPageLimit}
-            />
-          ) : null}
-          {!navHidden ? (
-            <div className={styles.pageInfo}>
-              {showAlt
-                ? `${altBookPage.width} x ${altBookPage.height}`
-                : `${bookPage.width} x ${bookPage.height}`}
-            </div>
-          ) : null}
-        </div>
-      </div>
-    );
   }
 
   const title = book.name;
@@ -290,7 +203,28 @@ export function PageBook(props) {
         onSettingsButtonClick={onSettingsButtonClick}
       />
       <div className={gridClassName} {...(altBookId != null ? handlers : {})}>
-        {[...Array(bookPages.length)].map((_, index) => renderPage(index))}
+        {[...Array(bookPages.length)].map((_, index) => (
+          <Page
+            index={index}
+            bookId={bookId}
+            altBookId={altBookId}
+            bookPage={bookPages[index]}
+            altBookPage={altBookId != null ? altBookPages[index] : null}
+            onPageClick={onPageClick}
+            readingMode={readingMode}
+            showAlt={showAlt}
+            showGrid={showGrid}
+            windowWidth={windowWidth}
+            windowHeight={windowHeight}
+            onPageLoad={onPageLoad}
+            onAltPageLoad={onAltPageLoad}
+            selectedPageLoaded={selectedPageLoaded}
+            selectedAltPageLoaded={selectedAltPageLoaded}
+            selectedPageIndex={selectedPageIndex}
+            navHidden={navHidden}
+            key={index}
+          />
+        ))}
       </div>
       {showSettingsModal && (
         <SettingsModal
@@ -303,6 +237,109 @@ export function PageBook(props) {
         <Footer prevBookId={prevId} nextBookId={nextId} hidden={navHidden} />
       ) : null}
     </>
+  );
+}
+
+function Page(props) {
+  const {
+    altBookId,
+    altBookPage,
+    bookId,
+    bookPage,
+    index,
+    onPageClick,
+    readingMode,
+    showAlt,
+    showGrid,
+    windowWidth,
+    windowHeight,
+    onPageLoad,
+    onAltPageLoad,
+    navHidden,
+    selectedPageIndex,
+    selectedPageLoaded,
+    selectedAltPageLoaded,
+  } = props;
+
+  const { ref, inView } = useInView({
+    rootMargin: `${windowHeight * 1.5}px 0px ${windowHeight * 3.5}px`,
+  });
+
+  const windowRatio = windowWidth / windowHeight;
+  const bookPageRatio = bookPage.height / bookPage.width;
+  const altBookPageRatio =
+    altBookId != null ? altBookPage.height / altBookPage.width : null;
+  const maxRatio =
+    altBookId == null
+      ? bookPageRatio
+      : Math.max(altBookPageRatio, bookPageRatio);
+  const ratio = showAlt ? altBookPageRatio : bookPageRatio;
+  const shouldSpanWidth = showGrid || readingMode !== "height";
+
+  const pageClassName = classnames(styles.page, {
+    [styles.pagePreview]: showGrid,
+    [styles.pageSpanWidth]: shouldSpanWidth,
+    [styles.pageSpanHeight]: !shouldSpanWidth,
+    [styles.pageWebtoon]: !showGrid && readingMode === "webtoon",
+  });
+  const imageClassName = classnames(styles.pageImage, {
+    [styles.pageImageHidden]: showAlt,
+  });
+  const altImageClassName = classnames(styles.pageImage, {
+    [styles.pageImageHidden]: !showAlt,
+  });
+
+  return (
+    <div
+      className={pageClassName}
+      key={index}
+      onClick={(e) => onPageClick(e, index)}
+      id={`page-${index}`}
+      ref={ref}
+    >
+      <div
+        className={styles.pageWrapper}
+        style={
+          !shouldSpanWidth
+            ? {
+                width: ratio < windowRatio ? "100%" : `${100 / ratio}vh`,
+              }
+            : undefined
+        }
+      >
+        {shouldSpanWidth ? (
+          <div
+            className={styles.pagePadding}
+            style={{
+              paddingTop: `${maxRatio * 100}%`,
+            }}
+          />
+        ) : null}
+        {inView ? (
+          <Image
+            className={imageClassName}
+            src={getBookPageURL(bookId, bookPage.index)}
+            onImageLoad={() => onPageLoad(index)}
+            shouldLoad={index === selectedPageIndex || selectedPageLoaded}
+          />
+        ) : null}
+        {altBookId != null && inView ? (
+          <Image
+            className={altImageClassName}
+            src={getBookPageURL(altBookId, altBookPage.index)}
+            onImageLoad={() => onAltPageLoad(index)}
+            shouldLoad={index === selectedPageIndex || selectedAltPageLoaded}
+          />
+        ) : null}
+        {!navHidden ? (
+          <div className={styles.pageInfo}>
+            {showAlt
+              ? `${altBookPage.width} x ${altBookPage.height}`
+              : `${bookPage.width} x ${bookPage.height}`}
+          </div>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
