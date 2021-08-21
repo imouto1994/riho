@@ -28,9 +28,7 @@ export function Image(props) {
 
   useEffect(() => {
     if (imageRef.current != null) {
-      if (imageRef.current.complete) {
-        onLoad();
-      } else if (isLoaded) {
+      if (isLoaded) {
         setIsLoaded(false);
       }
     }
