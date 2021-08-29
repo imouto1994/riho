@@ -93,11 +93,6 @@
   fill: white;
 }
 
-.pageGridPreview {
-  display: flex;
-  flex-flow: row wrap;
-}
-
 .page {
   margin-bottom: 32px;
 }
@@ -121,19 +116,6 @@
 
 .pageWebtoon {
   margin-bottom: 0;
-}
-
-.pagePreview {
-  padding: 0 8px;
-  flex: 0 0 25%;
-  width: 25%;
-}
-
-@media screen and (max-width: 576px) {
-  .pagePreview {
-    flex: 0 0 calc(100% / 3);
-    width: calc(100% / 3);
-  }
 }
 
 .pageWrapper {
@@ -166,6 +148,54 @@
 
 .pageImageHidden {
   display: none;
+}
+
+.previewModal {
+  position: fixed;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  z-index: 4;
+  padding: 24px 0;
+  overflow-y: auto;
+}
+
+.preview {
+  flex: 0 0 25%;
+  width: 25%;
+  padding: 0 8px;
+  margin-bottom: 16px;
+}
+
+@media screen and (max-width: 576px) {
+  .preview {
+    flex: 0 0 50%;
+    width: 50%;
+  }
+}
+
+.previewWrapper {
+  width: 100%;
+  position: relative;
+  border: 1px solid #e84393;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.previewPadding {
+  width: 100%;
+}
+
+.previewImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
 }
 
 .settingsModalOverlay {

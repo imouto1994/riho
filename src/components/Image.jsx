@@ -4,7 +4,7 @@ import classnames from "classnames";
 import styles from "./Image.module.css";
 
 export function Image(props) {
-  const { className, src, shouldLoad = true, onImageLoad } = props;
+  const { className, src, shouldLoad = true, onImageLoad, id } = props;
   const imageRef = useRef(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -44,6 +44,7 @@ export function Image(props) {
 
   return (
     <img
+      id={id}
       src={src}
       className={imageClassName}
       onLoad={onLoad}

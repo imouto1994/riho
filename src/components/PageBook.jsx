@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useParams, useHistory } from "react-router-dom";
 import { useQuery } from "react-query";
 import classnames from "classnames";
@@ -14,6 +14,7 @@ import { IconSettings } from "./IconSettings";
 import {
   KEY_BOOK_BY_ID,
   KEY_BOOK_PAGES_BY_ID,
+  KEY_BOOK_PREVIEWS_BY_ID,
   KEY_BOOKS_IN_TITLE,
 } from "../constants/query-key";
 import { useLockBodyScroll } from "../hooks/lock-body-scroll";
@@ -21,8 +22,10 @@ import { useLocalStorage } from "../hooks/local-storage";
 import { useWindowSize } from "../hooks/window-size";
 import {
   getBookPageURL,
+  getBookPreviewURL,
   getBookById,
   getBookPagesById,
+  getBookPreviewsById,
   getBooksInTitle,
 } from "../services/book";
 
@@ -35,11 +38,11 @@ export function PageBook(props) {
   const bookIds = bookIdsParam.split("/");
   const bookId = bookIds[0];
   const altBookId = bookIds[1];
-  const [showGrid, setShowGrid] = useState(false);
   const [selectedPageIndex, setSelectedPageIndex] = useState(0);
   const [selectedPageLoaded, setSelectedPageLoaded] = useState(false);
   const [selectedAltPageLoaded, setSelectedAltPageLoaded] = useState(false);
   const [navHidden, setNavHidden] = useState(true);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showAlt, setShowAlt] = useState(false);
   const [readingMode, setReadingMode] = useLocalStorage(
@@ -68,6 +71,14 @@ export function PageBook(props) {
     error: bookPagesFetchError,
   } = useQuery([KEY_BOOK_PAGES_BY_ID, bookId], () => getBookPagesById(bookId));
 
+  const {
+    status: bookPreviewsFetchStatus,
+    data: bookPreviews,
+    error: bookPreviewsFetchError,
+  } = useQuery([KEY_BOOK_PREVIEWS_BY_ID, bookId], () =>
+    getBookPreviewsById(bookId),
+  );
+
   const titleId = book?.title_id;
 
   const {
@@ -88,13 +99,15 @@ export function PageBook(props) {
     { enabled: altBookId != null },
   );
 
-  // useEffect(() => {
-  //   if (selectedPageIndex >= 0) {
-  //     document
-  //       .getElementById(`${showAlt ? "alt-" : ""}page-${selectedPageIndex}`)
-  //       .scrollIntoView();
-  //   }
-  // }, [selectedPageIndex]);
+  const {
+    status: altBookPreviewsFetchStatus,
+    data: altBookPreviews,
+    error: altBookPreviewsFetchError,
+  } = useQuery(
+    [KEY_BOOK_PREVIEWS_BY_ID, altBookId],
+    () => getBookPreviewsById(altBookId),
+    { enabled: altBookId != null },
+  );
 
   const handlers = useSwipeable({
     onSwipedRight: (eventData) => {
@@ -105,46 +118,45 @@ export function PageBook(props) {
   if (
     bookFetchStatus === "loading" ||
     bookPagesFetchStatus === "loading" ||
+    bookPreviewsFetchStatus === "loading" ||
     (altBookId != null && altBookFetchStatus === "loading") ||
-    (altBookId != null && altBookPagesFetchStatus === "loading")
+    (altBookId != null && altBookPagesFetchStatus === "loading") ||
+    (altBookId != null && altBookPreviewsFetchStatus === "loading")
   ) {
     return null;
   } else if (
     bookFetchStatus === "error" ||
     bookPagesFetchStatus === "error" ||
+    bookPreviewsFetchStatus === "error" ||
     (altBookId != null && altBookFetchStatus === "error") ||
-    (altBookId != null && altBookPagesFetchStatus === "error")
+    (altBookId != null && altBookPagesFetchStatus === "error") ||
+    (altBookId != null && altBookPreviewsFetchStatus === "error")
   ) {
     return null;
   }
 
   function onPageClick(e, pageIndex, isAlt) {
-    if (showGrid) {
-      setShowGrid(false);
-      setSelectedPageIndex(pageIndex);
+    const windowWidth = window.innerWidth;
+    const clickX = e.clientX;
+    if (clickX < windowWidth / 10) {
+      const currentPageEl = document.getElementById(`page-${pageIndex}`);
+      const currentPageTop = currentPageEl.getBoundingClientRect().top;
+      if (currentPageTop < -5) {
+        currentPageEl.scrollIntoView();
+      } else if (pageIndex > 0) {
+        const prevPageEl = document.getElementById(`page-${pageIndex - 1}`);
+        prevPageEl.scrollIntoView();
+      }
+    } else if (clickX < (9 * windowWidth) / 10) {
+      setNavHidden(!navHidden);
     } else {
-      const windowWidth = window.innerWidth;
-      const clickX = e.clientX;
-      if (clickX < windowWidth / 10) {
-        const currentPageEl = document.getElementById(`page-${pageIndex}`);
-        const currentPageTop = currentPageEl.getBoundingClientRect().top;
-        if (currentPageTop < -5) {
-          currentPageEl.scrollIntoView();
-        } else if (pageIndex > 0) {
-          const prevPageEl = document.getElementById(`page-${pageIndex - 1}`);
-          prevPageEl.scrollIntoView();
-        }
-      } else if (clickX < (9 * windowWidth) / 10) {
-        setNavHidden(!navHidden);
-      } else {
-        const currentPageEl = document.getElementById(`page-${pageIndex}`);
-        const currentPageTop = currentPageEl.getBoundingClientRect().top;
-        if (currentPageTop > 5) {
-          currentPageEl.scrollIntoView();
-        } else if (pageIndex < bookPages.length - 1) {
-          const nextPageEl = document.getElementById(`page-${pageIndex + 1}`);
-          nextPageEl.scrollIntoView();
-        }
+      const currentPageEl = document.getElementById(`page-${pageIndex}`);
+      const currentPageTop = currentPageEl.getBoundingClientRect().top;
+      if (currentPageTop > 5) {
+        currentPageEl.scrollIntoView();
+      } else if (pageIndex < bookPages.length - 1) {
+        const nextPageEl = document.getElementById(`page-${pageIndex + 1}`);
+        nextPageEl.scrollIntoView();
       }
     }
   }
@@ -156,14 +168,31 @@ export function PageBook(props) {
   }
 
   function onAltPageLoad(index) {
+    console.log(index, selectedPageIndex);
     if (index === selectedPageIndex) {
       setSelectedAltPageLoaded(true);
     }
   }
 
+  function onPreviewClick(e, index) {
+    setShowPreviewModal(false);
+    const imageElement = document.getElementById(`page-image-${index}`);
+    if (imageElement != null && !imageElement.complete) {
+      setSelectedPageLoaded(false);
+    }
+    const altImageElement = document.getElementById(`alt-page-image-${index}`);
+    if (altImageElement != null && !altImageElement.complete) {
+      setSelectedAltPageLoaded(false);
+    }
+    setSelectedPageIndex(index);
+    const selectedPageElement = document.getElementById(`page-${index}`);
+    if (selectedPageElement != null) {
+      selectedPageElement.scrollIntoView();
+    }
+  }
+
   function onGridButtonClick() {
-    setShowGrid(true);
-    window.scrollTo(0, 0);
+    setShowPreviewModal(true);
     setNavHidden(true);
   }
 
@@ -177,9 +206,6 @@ export function PageBook(props) {
 
   const title = book.name;
   const altTitle = altBookId != null ? altBook.name : "";
-  const gridClassName = classnames(styles.pageGrid, {
-    [styles.pageGridPreview]: showGrid,
-  });
 
   let prevId = null;
   let nextId = null;
@@ -199,10 +225,13 @@ export function PageBook(props) {
         title={showAlt ? altTitle : title}
         hidden={navHidden}
         titleId={book.title_id}
+        showAlt={showAlt}
+        previewURL={book.preview_url}
+        altPreviewURL={altBookId != null ? altBook.preview_url : null}
         onGridButtonClick={onGridButtonClick}
         onSettingsButtonClick={onSettingsButtonClick}
       />
-      <div className={gridClassName} {...(altBookId != null ? handlers : {})}>
+      <div {...(altBookId != null ? handlers : {})}>
         {[...Array(bookPages.length)].map((_, index) => (
           <Page
             index={index}
@@ -213,7 +242,6 @@ export function PageBook(props) {
             onPageClick={onPageClick}
             readingMode={readingMode}
             showAlt={showAlt}
-            showGrid={showGrid}
             windowWidth={windowWidth}
             windowHeight={windowHeight}
             onPageLoad={onPageLoad}
@@ -233,6 +261,20 @@ export function PageBook(props) {
           onReadingModeChange={onSettingsReadingModeChange}
         />
       )}
+      {showPreviewModal && (
+        <PreviewModal
+          onClose={() => setShowPreviewModal(false)}
+          bookId={bookId}
+          altBookId={altBookId}
+          bookPreviews={bookPreviews}
+          bookPages={bookPages}
+          altBookPreviews={altBookId != null ? altBookPreviews : []}
+          altBookPages={altBookId != null ? altBookPages : []}
+          showAlt={showAlt}
+          windowHeight={windowHeight}
+          onPreviewClick={onPreviewClick}
+        />
+      )}
       {books.length > 2 ? (
         <Footer prevBookId={prevId} nextBookId={nextId} hidden={navHidden} />
       ) : null}
@@ -250,7 +292,6 @@ function Page(props) {
     onPageClick,
     readingMode,
     showAlt,
-    showGrid,
     windowWidth,
     windowHeight,
     onPageLoad,
@@ -274,13 +315,12 @@ function Page(props) {
       ? bookPageRatio
       : Math.max(altBookPageRatio, bookPageRatio);
   const ratio = showAlt ? altBookPageRatio : bookPageRatio;
-  const shouldSpanWidth = showGrid || readingMode !== "height";
+  const shouldSpanWidth = readingMode !== "height";
 
   const pageClassName = classnames(styles.page, {
-    [styles.pagePreview]: showGrid,
     [styles.pageSpanWidth]: shouldSpanWidth,
     [styles.pageSpanHeight]: !shouldSpanWidth,
-    [styles.pageWebtoon]: !showGrid && readingMode === "webtoon",
+    [styles.pageWebtoon]: readingMode === "webtoon",
   });
   const imageClassName = classnames(styles.pageImage, {
     [styles.pageImageHidden]: showAlt,
@@ -317,6 +357,7 @@ function Page(props) {
         ) : null}
         {inView ? (
           <Image
+            id={`page-image-${index}`}
             className={imageClassName}
             src={getBookPageURL(bookId, bookPage.index)}
             onImageLoad={() => onPageLoad(index)}
@@ -325,6 +366,7 @@ function Page(props) {
         ) : null}
         {altBookId != null && inView ? (
           <Image
+            id={`alt-page-image-${index}`}
             className={altImageClassName}
             src={getBookPageURL(altBookId, altBookPage.index)}
             onImageLoad={() => onAltPageLoad(index)}
@@ -344,11 +386,20 @@ function Page(props) {
 }
 
 function Header(props) {
-  const { title, hidden, titleId, onGridButtonClick, onSettingsButtonClick } =
-    props;
+  const {
+    title,
+    hidden,
+    titleId,
+    onGridButtonClick,
+    onSettingsButtonClick,
+    showAlt,
+    previewURL,
+    altPreviewURL,
+  } = props;
   const headerClassName = classnames(styles.header, {
     [styles.headerHidden]: hidden,
   });
+  const showGridButton = !showAlt ? previewURL != null : altPreviewURL != null;
 
   return (
     <div className={headerClassName}>
@@ -364,9 +415,11 @@ function Header(props) {
         <button className={styles.headerButton} onClick={onSettingsButtonClick}>
           <IconSettings className={styles.headerIcon} />
         </button>
-        <button className={styles.headerButton} onClick={onGridButtonClick}>
-          <IconGrid className={styles.headerIcon} />
-        </button>
+        {showGridButton ? (
+          <button className={styles.headerButton} onClick={onGridButtonClick}>
+            <IconGrid className={styles.headerIcon} />
+          </button>
+        ) : null}
       </div>
     </div>
   );
@@ -447,5 +500,73 @@ function SettingsModal(props) {
         </div>
       </div>
     </>
+  );
+}
+
+function PreviewModal(props) {
+  const {
+    onClose,
+    showAlt,
+    bookId,
+    altBookId,
+    bookPreviews,
+    bookPages,
+    altBookPreviews,
+    altBookPages,
+    windowHeight,
+    onPreviewClick,
+  } = props;
+
+  useLockBodyScroll();
+
+  return (
+    <div className={styles.previewModal}>
+      {[...Array(bookPreviews.length)].map((_, index) => (
+        <Preview
+          index={index}
+          id={showAlt ? altBookId : bookId}
+          preview={showAlt ? altBookPreviews[index] : bookPreviews[index]}
+          page={showAlt ? altBookPages[index] : bookPages[index]}
+          onPreviewClick={onPreviewClick}
+          windowHeight={windowHeight}
+          key={index}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Preview(props) {
+  const { id, preview, page, index, onPreviewClick, windowHeight } = props;
+
+  const { ref, inView } = useInView({
+    rootMargin: `${windowHeight}px 0px`,
+  });
+
+  const ratio = page.height / page.width;
+
+  return (
+    <div
+      className={styles.preview}
+      key={index}
+      onClick={(e) => onPreviewClick(e, index)}
+      id={`preview-${index}`}
+      ref={ref}
+    >
+      <div className={styles.previewWrapper}>
+        <div
+          className={styles.previewPadding}
+          style={{
+            paddingTop: `${ratio * 100}%`,
+          }}
+        />
+        {inView ? (
+          <Image
+            className={styles.previewImage}
+            src={getBookPreviewURL(id, preview.index)}
+          />
+        ) : null}
+      </div>
+    </div>
   );
 }
