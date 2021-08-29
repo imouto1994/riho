@@ -168,7 +168,6 @@ export function PageBook(props) {
   }
 
   function onAltPageLoad(index) {
-    console.log(index, selectedPageIndex);
     if (index === selectedPageIndex) {
       setSelectedAltPageLoaded(true);
     }
@@ -177,11 +176,11 @@ export function PageBook(props) {
   function onPreviewClick(e, index) {
     setShowPreviewModal(false);
     const imageElement = document.getElementById(`page-image-${index}`);
-    if (imageElement != null && !imageElement.complete) {
+    if (imageElement == null || !imageElement.complete) {
       setSelectedPageLoaded(false);
     }
     const altImageElement = document.getElementById(`alt-page-image-${index}`);
-    if (altImageElement != null && !altImageElement.complete) {
+    if (altImageElement == null || !altImageElement.complete) {
       setSelectedAltPageLoaded(false);
     }
     setSelectedPageIndex(index);
@@ -540,7 +539,7 @@ function Preview(props) {
   const { id, preview, page, index, onPreviewClick, windowHeight } = props;
 
   const { ref, inView } = useInView({
-    rootMargin: `${windowHeight}px 0px`,
+    rootMargin: `${windowHeight / 2}px 0px`,
   });
 
   const ratio = page.height / page.width;
