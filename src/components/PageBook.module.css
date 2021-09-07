@@ -152,20 +152,43 @@
 
 .previewModal {
   position: fixed;
-  display: flex;
-  flex-flow: row wrap;
-  align-items: flex-start;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background: black;
   z-index: 4;
-  padding: 24px 0;
+  padding: 12px 0 24px;
   overflow-y: auto;
 }
 
+.previewGridHeader {
+  padding: 0 24px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.previewGridHeaderAddIconWrapper {
+  display: flex;
+}
+
+.previewGridHeaderAddIcon {
+  height: 36px;
+}
+
+.previewGrid {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+}
+
 .preview {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
   flex: 0 0 25%;
   width: 25%;
   padding: 0 8px;
@@ -182,9 +205,13 @@
 .previewWrapper {
   width: 100%;
   position: relative;
-  border: 1px solid #e84393;
+  border: 1px dashed #e84393;
   border-radius: 8px;
   overflow: hidden;
+}
+
+.previewWrapperFavorite {
+  border-color: #f6b93b;
 }
 
 .previewPadding {
@@ -196,6 +223,25 @@
   top: 0;
   left: 0;
   width: 100%;
+}
+
+.previewSelectedOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #e84393;
+  opacity: 0.5;
+}
+
+.previewStarIconWrapper {
+  display: flex;
+  margin-top: 12px;
+}
+
+.previewStarIcon {
+  height: 24px;
 }
 
 .settingsModalOverlay {
@@ -213,10 +259,12 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 40%;
   background: black;
   z-index: 3;
   padding: 24px 0;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border-top: 6px solid #e84393;
 }
 
 @media screen and (max-width: 576px) {
@@ -320,4 +368,68 @@
   .footerHidden {
     transform: translateY(60px);
   }
+}
+
+.createModal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: black;
+  z-index: 5;
+  padding: 24px 0;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border-top: 6px solid #e84393;
+}
+
+@media screen and (max-width: 576px) {
+  .createModal {
+    padding: 16px 0;
+  }
+}
+
+.createActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 24px 4px 0;
+  margin-bottom: 12px;
+}
+
+.createSection {
+  padding: 12px 24px;
+}
+
+.createField {
+  margin-bottom: 16px;
+}
+
+.createLabel {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.createInput {
+  display: block;
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid white;
+  color: white;
+  padding: 16px 16px;
+}
+
+.createInput:disabled {
+  border-color: rgb(150, 150, 150);
+  color: rgb(150, 150, 150);
+}
+
+.createInput::placeholder {
+  color: white;
+}
+
+.createInput:disabled::placeholder {
+  color: rgb(150, 150, 150);
 }

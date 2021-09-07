@@ -1,4 +1,4 @@
-import { get } from "../utils/request";
+import { get, post } from "../utils/request";
 
 export async function getTitles(queryParams = {}) {
   const {
@@ -40,4 +40,24 @@ export async function getTitleById(titleId) {
 
 export function getTitleCoverURL(titleId) {
   return `${import.meta.env.VITE_YUME_ENDPOINT}/api/title/${titleId}/cover`;
+}
+
+export async function createSubtitle({
+  name,
+  author,
+  pageStartNumber,
+  pageEndNumber,
+  bookId,
+  libraryId,
+}) {
+  const response = await post("/api/title/subtitle", {
+    name,
+    author,
+    page_start_number: pageStartNumber,
+    page_end_number: pageEndNumber,
+    book_id: bookId,
+    library_id: libraryId,
+  });
+
+  return response.data;
 }

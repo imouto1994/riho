@@ -1,4 +1,4 @@
-import { get } from "../utils/request";
+import { get, put } from "../utils/request";
 
 export async function getBooksInTitle(titleId) {
   const response = await get(`/api/title/${titleId}/books`);
@@ -17,6 +17,14 @@ export async function getBookPagesById(bookId) {
 
 export async function getBookPreviewsById(bookId) {
   const response = await get(`/api/book/${bookId}/previews`);
+  return response.data;
+}
+
+export async function updateBookPageFavorite(bookId, pageNumber, favorite) {
+  const response = await put(
+    `/api/book/${bookId}/page/${pageNumber}/favorite`,
+    { favorite },
+  );
   return response.data;
 }
 

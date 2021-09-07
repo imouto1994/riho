@@ -178,13 +178,6 @@
   margin-left: 4px;
 }
 
-.iconWebp {
-  font-size: 10px;
-  font-weight: 800;
-  color: #f6b93b;
-  margin-left: 4px;
-}
-
 .iconWaifu {
   flex: 0 0 16px;
   width: 16px;
@@ -216,6 +209,9 @@
   background: black;
   z-index: 3;
   padding: 24px 0;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border-top: 6px solid #e84393;
 }
 
 @media screen and (max-width: 576px) {

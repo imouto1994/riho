@@ -86,9 +86,7 @@ function ChaptersList(props) {
         >
           <div className={styles.chapterTitle}>{enChapter.name}</div>
           <div className={styles.chapterSubtitle}>
-            {`${
-              enChapter.page_count
-            } pages | ${enChapter.format.toUpperCase()}`}
+            {`${enChapter.page_count} pages`}
           </div>
         </Link>
         <Link
@@ -98,9 +96,7 @@ function ChaptersList(props) {
         >
           <div className={styles.chapterTitle}>{jpChapter.name}</div>
           <div className={styles.chapterSubtitle}>
-            {`${
-              jpChapter.page_count
-            } pages | ${jpChapter.format.toUpperCase()}`}
+            {`${jpChapter.page_count} pages`}
           </div>
         </Link>
       </div>
@@ -117,7 +113,7 @@ function ChaptersList(props) {
         >
           <div className={styles.chapterTitle}>{chapter.name}</div>
           <div className={styles.chapterSubtitle}>
-            {`${chapter.page_count} pages | ${chapter.format.toUpperCase()}`}
+            {`${chapter.page_count} pages`}
           </div>
         </Link>
       ))}

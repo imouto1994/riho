@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useParams, useHistory } from "react-router-dom";
-import { useQuery } from "react-query";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import classnames from "classnames";
 import { useSwipeable } from "react-swipeable";
 import { useInView } from "react-intersection-observer";
@@ -9,8 +9,11 @@ import { Button } from "./Button";
 import { Image } from "./Image";
 import { IconCheck } from "./IconCheck";
 import { Logo } from "./Logo";
+import { IconAdd } from "./IconAdd";
 import { IconGrid } from "./IconGrid";
 import { IconSettings } from "./IconSettings";
+import { IconStar } from "./IconStar";
+import { IconStarFilled } from "./IconStarFilled";
 import {
   KEY_BOOK_BY_ID,
   KEY_BOOK_PAGES_BY_ID,
@@ -27,7 +30,9 @@ import {
   getBookPagesById,
   getBookPreviewsById,
   getBooksInTitle,
+  updateBookPageFavorite,
 } from "../services/book";
+import { createSubtitle } from "../services/title";
 
 import styles from "./PageBook.module.css";
 
@@ -50,6 +55,8 @@ export function PageBook(props) {
     "width",
   );
   const { width: windowWidth, height: windowHeight } = useWindowSize();
+
+  const queryClient = useQueryClient();
 
   const {
     status: bookFetchStatus,
@@ -109,6 +116,16 @@ export function PageBook(props) {
     { enabled: altBookId != null },
   );
 
+  const favoriteMutation = useMutation(
+    ({ favorite, pageNumber }) =>
+      updateBookPageFavorite(bookId, pageNumber, favorite),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([KEY_BOOK_PAGES_BY_ID, bookId]);
+      },
+    },
+  );
+
   const handlers = useSwipeable({
     onSwipedRight: (eventData) => {
       setShowAlt((flag) => !flag);
@@ -159,6 +176,10 @@ export function PageBook(props) {
         nextPageEl.scrollIntoView();
       }
     }
+  }
+
+  function onPageFavoriteUpdate(index, favorite) {
+    favoriteMutation.mutate({ favorite, pageNumber: index });
   }
 
   function onPageLoad(index) {
@@ -272,6 +293,7 @@ export function PageBook(props) {
           showAlt={showAlt}
           windowHeight={windowHeight}
           onPreviewClick={onPreviewClick}
+          onPageFavoriteUpdate={onPageFavoriteUpdate}
         />
       )}
       {books.length > 2 ? (
@@ -302,10 +324,10 @@ function Page(props) {
   } = props;
 
   const { ref, inView } = useInView({
-    rootMargin: `${windowHeight * 1.5}px 0px ${windowHeight * 3.5}px`,
+    rootMargin: `${windowHeight * 2.5}px 0px ${windowHeight * 3.5}px`,
   });
 
-  const windowRatio = windowWidth / windowHeight;
+  const windowRatio = windowHeight / windowWidth;
   const bookPageRatio = bookPage.height / bookPage.width;
   const altBookPageRatio =
     altBookId != null ? altBookPage.height / altBookPage.width : null;
@@ -514,29 +536,103 @@ function PreviewModal(props) {
     altBookPages,
     windowHeight,
     onPreviewClick,
+    onPageFavoriteUpdate,
   } = props;
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [startImageNumber, setStartImageNumber] = useState(undefined);
+  const [endImageNumber, setEndImageNumber] = useState(undefined);
 
   useLockBodyScroll();
 
+  function onCreate() {
+    setShowCreateModal(true);
+  }
+
+  function onCreateModalClose() {
+    setStartImageNumber(undefined);
+    setEndImageNumber(undefined);
+    setShowCreateModal(false);
+  }
+
+  function onPreviewSelect(e, index) {
+    if (showCreateModal) {
+      if (index === startImageNumber) {
+        setStartImageNumber(undefined);
+        setEndImageNumber(undefined);
+      } else if (index === endImageNumber) {
+        setEndImageNumber(undefined);
+      } else {
+        if (startImageNumber == null) {
+          setStartImageNumber(index);
+        } else if (index < startImageNumber) {
+          setStartImageNumber(index);
+        } else {
+          setEndImageNumber(index);
+        }
+      }
+    } else {
+      onPreviewClick(e, index);
+    }
+  }
+
   return (
-    <div className={styles.previewModal}>
-      {[...Array(bookPreviews.length)].map((_, index) => (
-        <Preview
-          index={index}
-          id={showAlt ? altBookId : bookId}
-          preview={showAlt ? altBookPreviews[index] : bookPreviews[index]}
-          page={showAlt ? altBookPages[index] : bookPages[index]}
-          onPreviewClick={onPreviewClick}
-          windowHeight={windowHeight}
-          key={index}
+    <>
+      <div className={styles.previewModal}>
+        <div className={styles.previewGridHeader}>
+          <h1>Previews</h1>
+          <div
+            className={styles.previewGridHeaderAddIconWrapper}
+            onClick={onCreate}
+          >
+            <IconAdd className={styles.previewGridHeaderAddIcon} />
+          </div>
+        </div>
+        <div className={styles.previewGrid}>
+          {[...Array(bookPreviews.length)].map((_, index) => (
+            <Preview
+              selected={
+                showCreateModal &&
+                startImageNumber != null &&
+                (index === startImageNumber ||
+                  (endImageNumber != null &&
+                    startImageNumber <= index &&
+                    index <= endImageNumber))
+              }
+              index={index}
+              id={showAlt ? altBookId : bookId}
+              preview={showAlt ? altBookPreviews[index] : bookPreviews[index]}
+              page={showAlt ? altBookPages[index] : bookPages[index]}
+              onPreviewClick={onPreviewSelect}
+              onPageFavoriteUpdate={onPageFavoriteUpdate}
+              windowHeight={windowHeight}
+              key={index}
+            />
+          ))}
+        </div>
+      </div>
+      {showCreateModal ? (
+        <CreateModal
+          bookId={bookId}
+          startImageNumber={startImageNumber}
+          endImageNumber={endImageNumber}
+          onClose={onCreateModalClose}
         />
-      ))}
-    </div>
+      ) : null}
+    </>
   );
 }
 
 function Preview(props) {
-  const { id, preview, page, index, onPreviewClick, windowHeight } = props;
+  const {
+    id,
+    preview,
+    selected,
+    page,
+    index,
+    onPreviewClick,
+    windowHeight,
+    onPageFavoriteUpdate,
+  } = props;
 
   const { ref, inView } = useInView({
     rootMargin: `${windowHeight / 2}px 0px`,
@@ -544,15 +640,16 @@ function Preview(props) {
 
   const ratio = page.height / page.width;
 
+  const wrapperClassName = classnames(styles.previewWrapper, {
+    [styles.previewWrapperFavorite]: !!page.favorite,
+  });
+
   return (
-    <div
-      className={styles.preview}
-      key={index}
-      onClick={(e) => onPreviewClick(e, index)}
-      id={`preview-${index}`}
-      ref={ref}
-    >
-      <div className={styles.previewWrapper}>
+    <div className={styles.preview} key={index} ref={ref}>
+      <div
+        className={wrapperClassName}
+        onClick={(e) => onPreviewClick(e, index)}
+      >
         <div
           className={styles.previewPadding}
           style={{
@@ -565,6 +662,118 @@ function Preview(props) {
             src={getBookPreviewURL(id, preview.index)}
           />
         ) : null}
+        {selected ? <div className={styles.previewSelectedOverlay} /> : null}
+      </div>
+      <div
+        className={styles.previewStarIconWrapper}
+        onClick={() => onPageFavoriteUpdate(index, Math.abs(page.favorite - 1))}
+      >
+        {page.favorite ? (
+          <IconStarFilled className={styles.previewStarIcon} />
+        ) : (
+          <IconStar className={styles.previewStarIcon} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CreateModal(props) {
+  const { onClose, startImageNumber = "", endImageNumber = "", bookId } = props;
+  const [name, setName] = useState("");
+  const [author, setAuthor] = useState("");
+  const [libraryId, setLibraryId] = useState("");
+  const createSubtitleMutation = useMutation((params) =>
+    createSubtitle({
+      name: params.name,
+      author: params.author,
+      pageStartNumber: params.pageStartNumber,
+      pageEndNumber: params.pageEndNumber,
+      bookId: params.bookId,
+      libraryId: params.libraryId,
+    }),
+  );
+
+  function onCreate() {
+    const trimmedName = name.trim();
+    const trimmedAuthor = author.trim();
+    const trimmedLibraryId = libraryId.trim();
+    if (
+      trimmedName === "" ||
+      trimmedAuthor === "" ||
+      trimmedLibraryId === "" ||
+      startImageNumber === "" ||
+      endImageNumber === ""
+    ) {
+      return;
+    }
+    createSubtitleMutation.mutate({
+      name: trimmedName,
+      author: trimmedAuthor,
+      pageStartNumber: startImageNumber,
+      pageEndNumber: endImageNumber,
+      bookId: bookId,
+      libraryId: trimmedLibraryId,
+    });
+  }
+
+  return (
+    <div className={styles.createModal}>
+      <div className={styles.createActions}>
+        <Button style="transparent" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button onClick={onCreate} disabled={createSubtitleMutation.isLoading}>
+          {createSubtitleMutation.isLoading ? "Creating..." : "Create"}
+        </Button>
+      </div>
+      <div className={styles.createSection}>
+        <div className={styles.createField}>
+          <p className={styles.createLabel}>Title Name</p>
+          <input
+            className={styles.createInput}
+            placeholder="Please put title name..."
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className={styles.createField}>
+          <p className={styles.createLabel}>Title Author</p>
+          <input
+            className={styles.createInput}
+            placeholder="Please put title author..."
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+          />
+        </div>
+        <div className={styles.createField}>
+          <p className={styles.createLabel}>Library ID</p>
+          <input
+            className={styles.createInput}
+            type="number"
+            placeholder="Please put library ID..."
+            value={libraryId}
+            onChange={(e) => setLibraryId(e.target.value)}
+          />
+        </div>
+        <div className={styles.createField}>
+          <p className={styles.createLabel}>Start Image</p>
+          <input
+            className={styles.createInput}
+            placeholder="Please select start image..."
+            value={startImageNumber}
+            disabled
+          />
+        </div>
+        <div className={styles.createField}>
+          <p className={styles.createLabel}>End Image</p>
+          <input
+            className={styles.createInput}
+            value={endImageNumber}
+            placeholder="Please select end image..."
+            disabled
+          />
+        </div>
       </div>
     </div>
   );
